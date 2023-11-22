@@ -1,6 +1,6 @@
-http://example.com/about/index.html
-http://example.com/2023/11/20/My-New-Post/
-http://example.com/tags/index.html
-http://example.com/categories/index.html
-http://example.com/
-http://example.com/categories/web%E5%89%8D%E7%AB%AF/
+http://www.karsonto.com/about/index.html
+http://www.karsonto.com/2023/11/20/My-New-Post/
+http://www.karsonto.com/tags/index.html
+http://www.karsonto.com/categories/index.html
+http://www.karsonto.com/
+http://www.karsonto.com/categories/web%E5%89%8D%E7%AB%AF/

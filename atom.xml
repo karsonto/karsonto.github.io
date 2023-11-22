@@ -3,11 +3,11 @@
   <title>Karson の 微語</title>
   
   
-  <link href="http://example.com/atom.xml" rel="self"/>
+  <link href="http://www.karsonto.com/atom.xml" rel="self"/>
   
-  <link href="http://example.com/"/>
+  <link href="http://www.karsonto.com/"/>
   <updated>2023-11-21T08:09:36.522Z</updated>
-  <id>http://example.com/</id>
+  <id>http://www.karsonto.com/</id>
   
   <author>
     <name>Karson</name>
@@ -18,15 +18,15 @@
   
   <entry>
     <title>My New Post</title>
-    <link href="http://example.com/2023/11/20/My-New-Post/"/>
-    <id>http://example.com/2023/11/20/My-New-Post/</id>
+    <link href="http://www.karsonto.com/2023/11/20/My-New-Post/"/>
+    <id>http://www.karsonto.com/2023/11/20/My-New-Post/</id>
     <published>2023-11-20T10:34:12.000Z</published>
     <updated>2023-11-21T08:09:36.522Z</updated>
     
     
     
     
-    <category term="web前端" scheme="http://example.com/categories/web%E5%89%8D%E7%AB%AF/"/>
+    <category term="web前端" scheme="http://www.karsonto.com/categories/web%E5%89%8D%E7%AB%AF/"/>
     
     
   </entry>
