@@ -1,0 +1,298 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>【原创】Nacos 整合Prometheus+Grafana | Karson の 微語</title><meta name="author" content="Karson"><meta name="copyright" content="Karson"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="Nacos 整合 Prometheus+GrafanaNacos 2.2.0 开始已经支持 Prometheus Http 服务发现，官网文档一直没有更新，所以动手整合一下，让小伙伴们以作参考   安装 Nacos参考官方文档 下载安装包下载源码编译您可以从 最新稳定版本 下载 nacos-server-$version.zip 包。 12unzip nacos-server-$version.z">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【原创】Nacos 整合Prometheus+Grafana">
+<meta property="og:url" content="http://www.karsonto.com/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/index.html">
+<meta property="og:site_name" content="Karson の 微語">
+<meta property="og:description" content="Nacos 整合 Prometheus+GrafanaNacos 2.2.0 开始已经支持 Prometheus Http 服务发现，官网文档一直没有更新，所以动手整合一下，让小伙伴们以作参考   安装 Nacos参考官方文档 下载安装包下载源码编译您可以从 最新稳定版本 下载 nacos-server-$version.zip 包。 12unzip nacos-server-$version.z">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.karsonto.com/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/Nacos_Logo.png">
+<meta property="article:published_time" content="2023-11-25T04:02:31.000Z">
+<meta property="article:modified_time" content="2023-11-27T06:50:45.992Z">
+<meta property="article:author" content="Karson">
+<meta property="article:tag" content="Nacos">
+<meta property="article:tag" content="Prometheus">
+<meta property="article:tag" content="Grafana">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.karsonto.com/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/Nacos_Logo.png"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="http://www.karsonto.com/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '【原创】Nacos 整合Prometheus+Grafana',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-11-27 14:50:45'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="Karson の 微語" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">1</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首頁</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 標籤</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分類</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 關於</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/top-image.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Karson の 微語"><span class="site-name">Karson の 微語</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首頁</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 標籤</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分類</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 關於</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">【原创】Nacos 整合Prometheus+Grafana</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-11-25T04:02:31.000Z" title="发表于 2023-11-25 12:02:31">2023-11-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-11-27T06:50:45.992Z" title="更新于 2023-11-27 14:50:45">2023-11-27</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="【原创】Nacos 整合Prometheus+Grafana"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Nacos-整合-Prometheus-Grafana"><a href="#Nacos-整合-Prometheus-Grafana" class="headerlink" title="Nacos 整合 Prometheus+Grafana"></a>Nacos 整合 Prometheus+Grafana</h1><p>Nacos 2.2.0 开始已经支持 Prometheus Http 服务发现，官网文档一直没有更新，所以动手整合一下，让小伙伴们以作参考</p>
+<img src="nacos-2.2.0.png" width="100%" height="100%"/>
+
+<h2 id="安装-Nacos"><a href="#安装-Nacos" class="headerlink" title="安装 Nacos"></a>安装 Nacos</h2><p><a target="_blank" rel="noopener" href="https://nacos.io/zh-cn/docs/v2/quickstart/quick-start.html">参考官方文档</a></p>
+<div class="tabs" id="安装方法"><ul class="nav-tabs"><button type="button" class="tab  active" data-href="安装方法-1">下载安装包</button><button type="button" class="tab " data-href="安装方法-2">下载源码编译</button></ul><div class="tab-contents"><div class="tab-item-content active" id="安装方法-1"><p>您可以从 <a target="_blank" rel="noopener" href="https://github.com/alibaba/nacos/releases">最新稳定版本</a> 下载 nacos-server-$version.zip 包。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">unzip nacos-server-$version.zip 或者 tar -xvf nacos-server-$version.tar.gz</span><br><span class="line">cd nacos/bin</span><br></pre></td></tr></table></figure></div><div class="tab-item-content" id="安装方法-2"><p>从 Github 上下载源码方式</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/alibaba/nacos.git</span><br><span class="line">cd nacos/</span><br><span class="line">mvn -Prelease-nacos -Dmaven.test.skip=true clean install -U</span><br><span class="line">ls -al distribution/target/</span><br><span class="line"></span><br><span class="line">// change the $version to your actual path</span><br><span class="line">cd distribution/target/nacos-server-$version/nacos/bin</span><br></pre></td></tr></table></figure></div></div><div class="tab-to-top"><button type="button" aria-label="scroll to top"><i class="fas fa-arrow-up"></i></button></div></div>
+
+<h2 id="修改配置文件"><a href="#修改配置文件" class="headerlink" title="修改配置文件"></a>修改配置文件</h2><p>修改 conf 目录下的 application.properties 文件，开启 prometheus http sd 支持</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nacos.prometheus.metrics.enabled=true</span><br></pre></td></tr></table></figure>
+
+<h2 id="启动-Nacos"><a href="#启动-Nacos" class="headerlink" title="启动 Nacos"></a>启动 Nacos</h2><div class="tabs" id="启动nacos"><ul class="nav-tabs"><button type="button" class="tab  active" data-href="启动nacos-1">Windows</button><button type="button" class="tab " data-href="启动nacos-2">Linux/Unix/Mac</button></ul><div class="tab-contents"><div class="tab-item-content active" id="启动nacos-1"><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">startup.cmd -m standalone</span><br></pre></td></tr></table></figure></div><div class="tab-item-content" id="启动nacos-2"><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh startup.sh -m standalone</span><br></pre></td></tr></table></figure></div></div><div class="tab-to-top"><button type="button" aria-label="scroll to top"><i class="fas fa-arrow-up"></i></button></div></div>
+
+<h2 id="编写客户端测试"><a href="#编写客户端测试" class="headerlink" title="编写客户端测试"></a>编写客户端测试</h2><p>Nacos 已经支持 Rust SDK，感谢社区大佬<a target="_blank" rel="noopener" href="https://github.com/onewe">onewe</a> 、<a target="_blank" rel="noopener" href="https://github.com/CherishCai">CherishCai</a>以及多位的贡献<br>博主不会 Rust，参考大佬们代码，硬着头皮来一发<br>**<em>前提</em>**请先安装 Rust 环境以及 Cargo</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cargo new nacos_example</span><br><span class="line">cd nacos_example/</span><br><span class="line">vi Cargo.toml</span><br></pre></td></tr></table></figure>
+
+<p>添加 Rust 依赖</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> [dependencies]</span><br><span class="line">nacos-sdk = &#123; version = &quot;0.3&quot;, features = [&quot;default&quot;] &#125;</span><br><span class="line">tracing-subscriber = &quot;0.3&quot;</span><br><span class="line">tracing = &quot;0.1&quot;</span><br></pre></td></tr></table></figure>
+
+<p>编写代码</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd src</span><br><span class="line">vi main.rs</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::&#123;thread, time&#125;;</span><br><span class="line"><span class="keyword">use</span> nacos_sdk::api::constants;</span><br><span class="line"><span class="keyword">use</span> nacos_sdk::api::naming::&#123;</span><br><span class="line">    NamingChangeEvent, NamingEventListener, NamingService, NamingServiceBuilder, ServiceInstance,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">use</span> nacos_sdk::api::props::ClientProps;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> NACOS_ADDRESS: &amp;<span class="type">str</span> = <span class="string">&quot;127.0.0.1:8848&quot;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="keyword">fn</span> <span class="title function_">main</span>() <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;(), <span class="type">Box</span>&lt;<span class="keyword">dyn</span> std::error::Error&gt;&gt;  &#123;</span><br><span class="line">    tracing_subscriber::<span class="title function_ invoke__">fmt</span>()</span><br><span class="line">        <span class="comment">// all spans/events with a level higher than TRACE (e.g, info, warn, etc.)</span></span><br><span class="line">        <span class="comment">// will be written to stdout.</span></span><br><span class="line">        .<span class="title function_ invoke__">with_max_level</span>(tracing::Level::DEBUG)</span><br><span class="line">        .<span class="title function_ invoke__">with_thread_names</span>(<span class="literal">true</span>)</span><br><span class="line">        .<span class="title function_ invoke__">with_thread_ids</span>(<span class="literal">true</span>)</span><br><span class="line">        <span class="comment">// sets this to be the default, global collector for this application.</span></span><br><span class="line">        .<span class="title function_ invoke__">init</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">client_props</span> = ClientProps::<span class="title function_ invoke__">new</span>()</span><br><span class="line">        .<span class="title function_ invoke__">server_addr</span>(NACOS_ADDRESS)</span><br><span class="line">        <span class="comment">// .remote_grpc_port(9838)</span></span><br><span class="line">        <span class="comment">// Attention! &quot;public&quot; is &quot;&quot;, it is recommended to customize the namespace with clear meaning.</span></span><br><span class="line">        .<span class="title function_ invoke__">namespace</span>(<span class="string">&quot;&quot;</span>)</span><br><span class="line">        .<span class="title function_ invoke__">app_name</span>(<span class="string">&quot;karson_app&quot;</span>)</span><br><span class="line">        .<span class="title function_ invoke__">auth_username</span>(<span class="string">&quot;nacos&quot;</span>) <span class="comment">// TODO You can choose not to enable auth</span></span><br><span class="line">        .<span class="title function_ invoke__">auth_password</span>(<span class="string">&quot;nacos&quot;</span>) <span class="comment">// TODO You can choose not to enable auth</span></span><br><span class="line">        ;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ----------  Naming  -------------</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">naming_service</span> = NamingServiceBuilder::<span class="title function_ invoke__">new</span>(client_props)</span><br><span class="line">        .<span class="title function_ invoke__">enable_auth_plugin_http</span>() <span class="comment">// TODO You can choose not to enable auth</span></span><br><span class="line">        .<span class="title function_ invoke__">build</span>()?;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">listener</span> = std::sync::Arc::<span class="title function_ invoke__">new</span>(SimpleInstanceChangeListener);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">_subscribe_ret</span> = naming_service.<span class="title function_ invoke__">subscribe</span>(</span><br><span class="line">        <span class="string">&quot;karson-service&quot;</span>.<span class="title function_ invoke__">to_string</span>(),</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(constants::DEFAULT_GROUP.<span class="title function_ invoke__">to_string</span>()),</span><br><span class="line">        <span class="type">Vec</span>::<span class="title function_ invoke__">default</span>(),</span><br><span class="line">        listener,</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">service_instance1</span> = ServiceInstance &#123;</span><br><span class="line">        ip: <span class="string">&quot;127.0.0.1&quot;</span>.<span class="title function_ invoke__">to_string</span>(),</span><br><span class="line">        port: <span class="number">9090</span>,</span><br><span class="line">        ..<span class="built_in">Default</span>::<span class="title function_ invoke__">default</span>()</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">_register_instance_ret</span> = naming_service.<span class="title function_ invoke__">batch_register_instance</span>(</span><br><span class="line">        <span class="string">&quot;karson-service&quot;</span>.<span class="title function_ invoke__">to_string</span>(),</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(constants::DEFAULT_GROUP.<span class="title function_ invoke__">to_string</span>()),</span><br><span class="line">        <span class="built_in">vec!</span>[service_instance1],</span><br><span class="line">    );</span><br><span class="line">    thread::<span class="title function_ invoke__">sleep</span>(time::Duration::<span class="title function_ invoke__">from_millis</span>(<span class="number">100000000</span>));</span><br><span class="line"></span><br><span class="line">    <span class="title function_ invoke__">Ok</span>(())</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">SimpleInstanceChangeListener</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="title class_">NamingEventListener</span> <span class="keyword">for</span> <span class="title class_">SimpleInstanceChangeListener</span> &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">event</span>(&amp;<span class="keyword">self</span>, event: std::sync::Arc&lt;NamingChangeEvent&gt;) &#123;</span><br><span class="line">        tracing::info!(<span class="string">&quot;subscriber notify: &#123;:?&#125;&quot;</span>, event);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行项目代码</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo cargo run</span><br></pre></td></tr></table></figure>
+
+<img src="cargo_run.png" width="100%" height="100%"/>
+
+<p>访问 Nacos</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:8848/nacos</span><br></pre></td></tr></table></figure>
+
+<img src="nacos_services.png" width="100%" height="100%"/>
+
+<p>服务正常注册</p>
+<h2 id="安装运行-Prometheus-docker-版"><a href="#安装运行-Prometheus-docker-版" class="headerlink" title="安装运行 Prometheus(docker 版)"></a>安装运行 Prometheus(docker 版)</h2><p>新建目录 prometheus，编辑配置文件 prometheus.yml</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir ~/prometheus</span><br><span class="line">cd ~/prometheus/</span><br><span class="line">vim prometheus.yml</span><br></pre></td></tr></table></figure>
+
+<p>内容如下:</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">scrape_configs:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">job_name:</span> <span class="string">http</span></span><br><span class="line">  <span class="attr">http_sd_configs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">url:</span> <span class="string">&quot;http://host.docker.internal:8848/nacos/prometheus&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>为了方便测试，Nacos 配置指向宿主 Host</p>
+<p>启动 prometheus</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run  -d -p 9090:9090  -v ~/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus</span><br></pre></td></tr></table></figure>
+
+<p>访问 url :</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:9090/</span><br></pre></td></tr></table></figure>
+
+<img src="prometheus_startup.png" width="100%" height="100%"/>
+Prometheus 启动正常
+访问url :
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:9090/service-discovery</span><br></pre></td></tr></table></figure>
+<img src="prometheus_sd.png" width="100%" height="100%"/>
+Nacos 整合Prometheus SD 完毕
+
+<h3 id="安装并启动-Grafana-docker-版"><a href="#安装并启动-Grafana-docker-版" class="headerlink" title="安装并启动 Grafana(docker 版)"></a>安装并启动 Grafana(docker 版)</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 3000:3000 --name=grafana grafana/grafana</span><br></pre></td></tr></table></figure>
+
+<p>默认用户 admin，密码 admin<br><img src="grafana_startup.png" width="100%" height="100%"/><br>选择添加数据库并选择 Prometheus<br><img src="grafana_datasource.png" width="100%" height="100%"/><br><img src="grafana_prometheus.png" width="100%" height="100%"/><br>URL 输入<a target="_blank" rel="noopener" href="http://host.docker.internal:9090/">http://host.docker.internal:9090</a> 并保存<br><img src="prometheus_url.png" width="100%" height="100%"/></p>
+<p>到此，Nacos 整合 Prometheus+Grafana 完毕，后续客户端应用自己实现埋点并提供&#x2F;metrics 接口暴露数据</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://www.karsonto.com">Karson</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://www.karsonto.com/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/">http://www.karsonto.com/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.karsonto.com" target="_blank">Karson の 微語</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Nacos/">Nacos</a><a class="post-meta__tags" href="/tags/Prometheus/">Prometheus</a><a class="post-meta__tags" href="/tags/Grafana/">Grafana</a></div><div class="post_share"><div class="social-share" data-image="/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/Nacos_Logo.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat_reward.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat_reward.jpg"/></a><div class="post-qr-code-desc"></div></li></ul></div></div><nav class="pagination-post" id="pagination"></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Karson</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">1</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/karsonto"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="mailto:karsontao@hotmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="/img/wechat.jpg" target="_blank" title=""><i class="fab fa-weixin"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Nacos-%E6%95%B4%E5%90%88-Prometheus-Grafana"><span class="toc-number">1.</span> <span class="toc-text">Nacos 整合 Prometheus+Grafana</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85-Nacos"><span class="toc-number">1.1.</span> <span class="toc-text">安装 Nacos</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.</span> <span class="toc-text">修改配置文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8-Nacos"><span class="toc-number">1.3.</span> <span class="toc-text">启动 Nacos</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%B5%8B%E8%AF%95"><span class="toc-number">1.4.</span> <span class="toc-text">编写客户端测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E8%BF%90%E8%A1%8C-Prometheus-docker-%E7%89%88"><span class="toc-number">1.5.</span> <span class="toc-text">安装运行 Prometheus(docker 版)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E5%B9%B6%E5%90%AF%E5%8A%A8-Grafana-docker-%E7%89%88"><span class="toc-number">1.5.1.</span> <span class="toc-text">安装并启动 Grafana(docker 版)</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/" title="【原创】Nacos 整合Prometheus+Grafana"><img src="/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/Nacos_Logo.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="【原创】Nacos 整合Prometheus+Grafana"/></a><div class="content"><a class="title" href="/2023/11/25/%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91Nacos-%E6%95%B4%E5%90%88Prometheus-Grafana/" title="【原创】Nacos 整合Prometheus+Grafana">【原创】Nacos 整合Prometheus+Grafana</a><time datetime="2023-11-25T04:02:31.000Z" title="发表于 2023-11-25 12:02:31">2023-11-25</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By Karson</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: '9ab5542e29dcc547cf3b',
+      clientSecret: '3c86fda3ec364ecff8c316fe56c9e267fbd42ca9',
+      repo: 'karsonto.github.io',
+      owner: 'karsonto',
+      admin: ['karsonto'],
+      id: '88b0438250c2db6fd639c2e24caa1f6e',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script>(() => {
+  window.$crisp = [];
+  window.CRISP_WEBSITE_ID = "f471f4fb-7aa5-4f3b-901b-2b87c9902c4f";
+  (function () {
+    d = document;
+    s = d.createElement("script");
+    s.src = "https://client.crisp.chat/l.js";
+    s.async = 1;
+    d.getElementsByTagName("head")[0].appendChild(s);
+  })();
+  $crisp.push(["safe", true])
+
+  const isChatBtn = true
+  const isChatHideShow = true
+
+  if (isChatBtn) {
+    const open = () => {
+      $crisp.push(["do", "chat:show"])
+      $crisp.push(["do", "chat:open"])
+    }
+
+    const close = () => {
+      $crisp.push(["do", "chat:hide"])
+    }
+
+    close()
+    $crisp.push(["on", "chat:closed", function() {
+      close()
+    }])
+
+    window.chatBtnFn = () => {
+      $crisp.is("chat:visible") ? close() : open()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        $crisp.push(["do", "chat:hide"])
+      },
+      show: () => {
+        $crisp.push(["do", "chat:show"])
+      }
+    }
+  }
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
