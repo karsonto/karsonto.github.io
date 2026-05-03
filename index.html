@@ -1,0 +1,2547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f6f2" />
+  <meta name="color-scheme" content="light" />
+  <title>开奖笔记 · 轮盘标注</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+:root {
+  --ink: oklch(0.22 0.02 145);
+  --muted: oklch(0.48 0.02 145);
+  --surface: oklch(0.995 0.006 95);
+  --surface-2: oklch(0.97 0.01 100);
+  --border: oklch(0.90 0.02 100);
+  --accent: oklch(0.48 0.11 150);
+  --accent-2: oklch(0.62 0.12 85);
+  --accent-soft: oklch(0.92 0.04 145);
+  --danger: oklch(0.52 0.17 25);
+  --ok: oklch(0.5 0.14 150);
+  --warn-bg: oklch(0.97 0.04 85);
+  --warn-ink: oklch(0.42 0.08 70);
+  --shadow: 0 12px 36px color-mix(in oklch, var(--ink) 9%, transparent);
+  --radius-card: 18px;
+  --radius-btn: 999px;
+  --green: #0d8f4a;
+  --red: #c41e3a;
+  --black: #15151a;
+  --font-display: "Newsreader", Georgia, "Noto Serif SC", ui-serif, serif;
+  --font-ui: "Plus Jakarta Sans", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  line-height: 1.55;
+  padding: clamp(0.85rem, 3vw, 1.85rem);
+  padding-left: max(clamp(0.85rem, 3vw, 1.85rem), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(0.85rem, 3vw, 1.85rem), env(safe-area-inset-right, 0px));
+  padding-bottom: max(clamp(0.85rem, 3vw, 1.85rem), env(safe-area-inset-bottom, 0px));
+  background:
+    radial-gradient(1100px 480px at 12% -5%, oklch(0.96 0.03 150), transparent 55%),
+    radial-gradient(900px 420px at 92% 8%, oklch(0.96 0.025 85), transparent 50%),
+    linear-gradient(180deg, oklch(0.995 0.005 95), oklch(0.985 0.008 110));
+}
+
+.app {
+  max-width: 1060px;
+  margin: 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+header {
+  margin-bottom: 1.5rem;
+}
+
+.kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.85rem, 3.2vw, 2.45rem);
+  font-weight: 600;
+  margin: 0 0 0.45rem;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0;
+  max-width: 46rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.subtitle strong {
+  color: color-mix(in oklch, var(--accent) 65%, var(--ink));
+  font-weight: 700;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.35rem;
+  align-items: start;
+}
+
+@media (min-width: 840px) {
+  .layout {
+    grid-template-columns: minmax(290px, 340px) 1fr;
+    gap: 1.65rem;
+  }
+}
+
+/* 手机与窄屏：轮盘靠前、触控与字号加强、避免横向溢出 */
+@media (max-width: 839px) {
+  body {
+    padding-top: max(0.85rem, env(safe-area-inset-top, 0px));
+  }
+
+  header {
+    margin-bottom: 1.1rem;
+  }
+
+  h1 {
+    font-size: clamp(1.55rem, 6.2vw, 2.05rem);
+    line-height: 1.15;
+  }
+
+  .subtitle {
+    font-size: clamp(0.88rem, 3.6vw, 0.95rem);
+    line-height: 1.6;
+    max-width: none;
+  }
+
+  .layout {
+    gap: 1.1rem;
+    min-width: 0;
+  }
+
+  .wheel-col {
+    order: -1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .panel {
+    padding: 1.05rem 0.95rem 1.15rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .panel h2 {
+    font-size: 1rem;
+  }
+
+  .hint {
+    font-size: 0.82rem;
+  }
+
+  .stack-input-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    align-items: stretch;
+    min-width: 0;
+  }
+
+  .stack-input-row input {
+    min-height: 48px;
+    font-size: 1.08rem;
+  }
+
+  .stack-input-row .btn-primary {
+    min-height: 48px;
+    min-width: 5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .panel-actions .btn {
+    min-height: 46px;
+    padding: 0.52rem 1rem;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .stack-cap-setting input[type="number"] {
+    min-height: 44px;
+    font-size: 1rem;
+    width: min(100%, 5.75rem);
+  }
+
+  .stack-preview {
+    gap: 0.45rem;
+  }
+
+  .stack-chip {
+    padding: 0.35rem 0.62rem;
+    font-size: 0.78rem;
+  }
+
+  .stat-row {
+    grid-template-columns: minmax(3rem, auto) minmax(0, 1fr) minmax(4.75rem, auto);
+    gap: 0.35rem 0.45rem;
+    font-size: 0.79rem;
+  }
+
+  .stat-label {
+    white-space: normal;
+    min-width: 0;
+    line-height: 1.3;
+  }
+
+  .stat-meta {
+    min-width: 4.75rem;
+    font-size: 0.71rem;
+  }
+
+  .wheel-sticker {
+    width: 100%;
+    max-width: min(100%, 460px);
+    padding: clamp(0.72rem, 3vw, 1rem) 0.65rem clamp(0.85rem, 3vw, 1.15rem);
+  }
+
+  .wheel-wrap {
+    width: min(calc(100vw - 2 * max(0.85rem, env(safe-area-inset-left, 0px)) - 8px), 420px);
+    max-width: 100%;
+  }
+
+  .legend {
+    font-size: 0.72rem;
+    line-height: 1.55;
+    row-gap: 0.55rem;
+  }
+
+  .fusion-under-wheel {
+    padding: 0.72rem 0.62rem;
+  }
+
+  .fusion-under-wheel-nums {
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .fusion-under-wheel-hint {
+    font-size: 0.68rem;
+  }
+
+  .strategy-lens-body .stat-row {
+    grid-template-columns: minmax(0, 1fr) minmax(52px, 1fr) minmax(0, auto);
+    font-size: 0.73rem;
+  }
+
+  .color-stats .note,
+  #strategyLensHint {
+    font-size: clamp(0.74rem, 3.4vw, 0.82rem);
+  }
+
+  .strategy-details summary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #dupSummarySection {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .strategy-lens-body .stat-row {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+
+  .strategy-lens-body .stat-row .stat-label {
+    grid-column: 1 / -1;
+  }
+
+  .strategy-lens-body .stat-row .stat-bar-wrap {
+    grid-column: 1 / -1;
+    min-height: 9px;
+  }
+
+  .strategy-lens-body .stat-row .stat-meta {
+    grid-column: 1 / -1;
+    justify-self: start;
+    text-align: left;
+  }
+}
+
+@media (max-width: 839px) and (orientation: landscape) {
+  .wheel-wrap {
+    width: min(72vw, 380px);
+  }
+}
+
+.panel {
+  position: relative;
+  background: color-mix(in oklch, var(--surface) 92%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem 1.2rem 1.35rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.panel::before {
+  display: none;
+}
+
+.panel h2 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.panel h2 .badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: oklch(0.99 0.02 150);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--accent) 75%, var(--ink)),
+    color-mix(in oklch, var(--accent-2) 70%, var(--accent))
+  );
+  border: 1px solid color-mix(in oklch, var(--accent) 35%, transparent);
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-btn);
+  box-shadow: 0 2px 10px color-mix(in oklch, var(--accent) 22%, transparent);
+}
+
+.panel h2 .badge.soft,
+.strategy-lens .badge.soft {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: oklch(0.42 0.06 150);
+  background: color-mix(in oklch, var(--accent-soft) 92%, transparent);
+  border: 1px solid color-mix(in oklch, var(--accent) 28%, var(--border));
+}
+
+.strategy-lens {
+  margin-top: 1rem;
+  padding-top: 0.95rem;
+  border-top: 1px dashed color-mix(in oklch, var(--border) 88%, var(--accent-soft));
+}
+
+.strategy-lens h3 {
+  font-size: 0.82rem;
+  font-weight: 750;
+  margin: 0 0 0.35rem;
+  color: var(--ink);
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+
+.strategy-empty {
+  margin: 0.35rem 0 0;
+}
+
+.strategy-empty-msg {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.strategy-summary {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: color-mix(in oklch, var(--accent) 28%, var(--ink));
+  line-height: 1.52;
+  margin: 0 0 0.75rem;
+  padding: 0.52rem 0.62rem;
+  border-radius: 12px;
+  background: color-mix(in oklch, var(--accent-soft) 55%, var(--surface));
+  border: 1px solid color-mix(in oklch, var(--accent) 18%, var(--border));
+  text-wrap: pretty;
+}
+
+.strategy-dual-block {
+  margin-bottom: 0.95rem;
+  padding: 0.62rem 0.62rem 0.7rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklch, var(--border) 90%, transparent);
+  background: color-mix(in oklch, var(--surface) 88%, transparent);
+}
+
+.strategy-dual-accent {
+  border-color: color-mix(in oklch, var(--accent) 22%, var(--border));
+}
+
+.strategy-subheading-tier2 {
+  margin-top: 0.85rem;
+}
+
+.strategy-micro-note {
+  margin: 0 0 0.45rem;
+  font-size: 0.69rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.stat-bar.strategy-voisins {
+  background: linear-gradient(90deg, #9b7bdc, #7358b3);
+}
+
+.stat-bar.strategy-tiers {
+  background: linear-gradient(90deg, #5aab9f, #2d8678);
+}
+
+.stat-bar.strategy-orphelins {
+  background: linear-gradient(90deg, #daa05c, #b87a38);
+}
+
+.strategy-details {
+  margin-top: 0.65rem;
+  font-size: 0.74rem;
+  color: var(--ink);
+}
+
+.strategy-details summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: color-mix(in oklch, var(--accent) 35%, var(--ink));
+}
+
+.strategy-details-nested summary {
+  font-weight: 600;
+}
+
+.strategy-top-list,
+.strategy-all-list {
+  margin: 0.4rem 0 0;
+  padding-left: 1rem;
+}
+
+.strategy-top-list li,
+.strategy-all-list li {
+  margin-bottom: 0.22rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.strategy-all-list {
+  max-height: 12rem;
+  overflow: auto;
+  padding-right: 0.35rem;
+}
+
+.strategy-lens-body .stat-row {
+  grid-template-columns: minmax(5.2rem, 0.95fr) minmax(50px, 1fr) auto;
+  gap: 0.35rem 0.45rem;
+}
+
+.strategy-subheading {
+  margin: 0 0 0.2rem;
+  font-size: 0.74rem;
+  font-weight: 750;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.fusion-under-wheel {
+  margin-top: 1rem;
+  padding: 0.65rem 0.75rem 0.72rem;
+  width: 100%;
+  max-width: min(92vw, 480px);
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid color-mix(in oklch, var(--accent-2) 35%, var(--border));
+  background: color-mix(in oklch, var(--surface-2) 88%, var(--surface));
+  text-align: center;
+}
+
+.fusion-under-wheel-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 750;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.fusion-under-wheel-nums {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  word-break: break-word;
+}
+
+.fusion-under-wheel-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.67rem;
+  line-height: 1.52;
+  color: var(--muted);
+  font-weight: 440;
+}
+
+.fusion-under-wheel.phy-under-wheel {
+  margin-top: 0.72rem;
+  border-color: color-mix(in oklch, var(--accent) 42%, var(--border));
+}
+
+.fusion-under-wheel-nums.phy-pending {
+  font-size: 0.74rem;
+  font-weight: 520;
+  color: var(--muted);
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 0.85rem;
+  line-height: 1.55;
+  padding: 0.55rem 0.65rem;
+  background: var(--surface-2);
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklch, var(--border) 85%, var(--accent-soft));
+  text-wrap: pretty;
+}
+
+.stack-in label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--ink);
+  margin: 0 0 0.4rem;
+  letter-spacing: 0.02em;
+}
+
+.stack-input-row {
+  display: flex;
+  gap: 0.55rem;
+  align-items: stretch;
+}
+
+.stack-input-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.52rem 0.65rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.stack-input-row input:focus {
+  border-color: color-mix(in oklch, var(--accent) 55%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 18%, transparent);
+}
+
+.stack-input-row input.invalid {
+  border-color: color-mix(in oklch, var(--danger) 55%, var(--border));
+  background: color-mix(in oklch, var(--danger) 6%, var(--surface));
+}
+
+.stack-input-row .btn-primary {
+  flex-shrink: 0;
+  padding-left: 1.2rem;
+  padding-right: 1.2rem;
+}
+
+.stack-preview-wrap {
+  margin-top: 0.85rem;
+}
+
+.stack-preview-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.stack-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  min-height: 2.2rem;
+}
+
+.stack-empty {
+  font-size: 0.76rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.stack-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.26rem 0.55rem;
+  border-radius: var(--radius-btn);
+  font-size: 0.74rem;
+  font-weight: 650;
+  background: var(--surface);
+  border: 1px solid color-mix(in oklch, var(--border) 70%, var(--accent));
+  color: var(--ink);
+  box-shadow: 0 1px 4px color-mix(in oklch, var(--ink) 6%, transparent);
+}
+
+.stack-chip.recent {
+  background: color-mix(in oklch, var(--accent-soft) 65%, var(--surface));
+  border-color: color-mix(in oklch, var(--accent) 42%, var(--border));
+  color: color-mix(in oklch, var(--accent) 35%, var(--ink));
+}
+
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+  align-items: center;
+}
+
+.stack-cap-setting {
+  margin-top: 0.75rem;
+  padding: 0.52rem 0.62rem 0.58rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklch, var(--border) 88%, var(--accent-soft));
+  background: var(--surface-2);
+  font-size: 0.74rem;
+  color: var(--ink);
+}
+
+.stack-cap-setting label {
+  display: block;
+  font-weight: 650;
+  margin-bottom: 0.35rem;
+}
+
+.stack-cap-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.stack-cap-setting input[type="number"] {
+  width: 4.75rem;
+  padding: 0.38rem 0.42rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.stack-cap-setting-hint {
+  font-size: 0.66rem;
+  color: var(--muted);
+  line-height: 1.42;
+  flex: 1 1 100%;
+  margin-top: 0.2rem;
+}
+
+.btn {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  padding: 0.48rem 1rem;
+  border-radius: var(--radius-btn);
+  border: 1px solid color-mix(in oklch, var(--border) 80%, var(--accent));
+  background: var(--surface);
+  color: color-mix(in oklch, var(--accent) 45%, var(--ink));
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .stack-input-row input,
+  .stat-bar {
+    transition: none;
+  }
+}
+
+.btn:hover {
+  background: var(--surface-2);
+  border-color: color-mix(in oklch, var(--accent) 35%, var(--border));
+  box-shadow: 0 4px 14px color-mix(in oklch, var(--ink) 8%, transparent);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  border: none;
+  color: oklch(0.99 0.02 150);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--accent) 88%, var(--ink)),
+    color-mix(in oklch, var(--accent-2) 75%, var(--accent))
+  );
+  box-shadow: 0 4px 18px color-mix(in oklch, var(--accent) 28%, transparent);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 22px color-mix(in oklch, var(--accent) 34%, transparent);
+}
+
+.status {
+  font-size: 0.8rem;
+  margin: 0.75rem 0 0;
+  min-height: 1.2em;
+  line-height: 1.45;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.status.error {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.status.ok {
+  color: color-mix(in oklch, var(--ok) 55%, var(--ink));
+  font-weight: 600;
+}
+
+.color-stats {
+  margin-top: 1rem;
+  padding-top: 0.95rem;
+  border-top: 1px dashed color-mix(in oklch, var(--border) 88%, var(--accent-soft));
+}
+
+.color-stats h3 {
+  font-size: 0.82rem;
+  font-weight: 750;
+  margin: 0 0 0.35rem;
+  color: var(--ink);
+  letter-spacing: 0.03em;
+}
+
+.color-stats .note {
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin: 0 0 0.6rem;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.color-stats .note.warn {
+  color: var(--warn-ink);
+  margin-top: -0.25rem;
+  margin-bottom: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  background: var(--warn-bg);
+  border: 1px solid color-mix(in oklch, var(--warn-ink) 20%, var(--border));
+  border-radius: 10px;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 3.2rem 1fr auto;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  margin-bottom: 0.42rem;
+  font-size: 0.76rem;
+}
+
+.stat-row:last-child {
+  margin-bottom: 0;
+}
+
+.stat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.stat-label .sw {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stat-label .sw.green {
+  background: var(--green);
+}
+.stat-label .sw.red {
+  background: var(--red);
+}
+.stat-label .sw.black {
+  background: var(--black);
+  border: 1px solid #666;
+}
+.stat-label .sw.odd {
+  background: #4a5fc4;
+}
+.stat-label .sw.even {
+  background: #2e8fa8;
+}
+.stat-label .sw.zero-oe {
+  background: var(--green);
+  border: 1px solid #0a6b3c;
+}
+
+.stat-bar-wrap {
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface-2) 90%, var(--border));
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  border-radius: 999px;
+  min-width: 0;
+  transition: width 0.25s ease;
+}
+
+.stat-bar.green {
+  background: linear-gradient(90deg, #34c38f, var(--green));
+}
+.stat-bar.red {
+  background: linear-gradient(90deg, #e85a6e, var(--red));
+}
+.stat-bar.black {
+  background: linear-gradient(90deg, #6b6b78, #3a3a44);
+}
+.stat-bar.odd {
+  background: linear-gradient(90deg, #7b8cff, #4a5fc4);
+}
+.stat-bar.even {
+  background: linear-gradient(90deg, #5ec4d6, #2e8fa8);
+}
+.stat-bar.zero-oe {
+  background: linear-gradient(90deg, #34c38f, var(--green));
+}
+
+.stat-meta {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  min-width: 5.5rem;
+}
+
+.stat-meta strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.dup-summary {
+  margin-top: 1rem;
+  padding-top: 0.95rem;
+  border-top: 1px dashed color-mix(in oklch, var(--border) 88%, var(--accent-soft));
+}
+
+.dup-summary h3 {
+  font-size: 0.82rem;
+  font-weight: 750;
+  margin: 0 0 0.38rem;
+  color: var(--ink);
+}
+
+.dup-summary .dup-note {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.dup-summary ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.77rem;
+  line-height: 1.55;
+}
+
+.dup-summary li {
+  padding: 0.48rem 0.6rem;
+  margin-bottom: 0.35rem;
+  background: var(--surface-2);
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklch, var(--danger) 22%, var(--border));
+  box-shadow: 0 1px 6px color-mix(in oklch, var(--ink) 5%, transparent);
+}
+
+.dup-summary li:last-child {
+  margin-bottom: 0;
+}
+
+.wheel-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wheel-sticker {
+  background: color-mix(in oklch, var(--surface) 94%, transparent);
+  border-radius: 22px;
+  padding: 1rem 0.85rem 1.2rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow), 0 0 0 1px color-mix(in oklch, var(--surface) 60%, transparent) inset;
+  max-width: min(92vw, 480px);
+}
+
+.wheel-wrap {
+  position: relative;
+  width: min(88vw, 420px);
+  margin: 0 auto;
+  aspect-ratio: 1;
+  filter: drop-shadow(0 12px 28px color-mix(in oklch, var(--ink) 12%, transparent));
+}
+
+.wheel-wrap svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.legend {
+  display: flex;
+  gap: 0.65rem 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 0.95rem;
+  font-size: 0.74rem;
+  color: var(--muted);
+  padding: 0 0.35rem;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dot {
+  width: 0.58rem;
+  height: 0.58rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot.green {
+  background: var(--green);
+}
+.dot.red {
+  background: var(--red);
+}
+.dot.black {
+  background: var(--black);
+  border: 1px solid #444;
+}
+.dot.marker {
+  background: linear-gradient(135deg, color-mix(in oklch, var(--accent-2) 80%, var(--surface)), var(--accent-2));
+  border: 1px solid color-mix(in oklch, var(--accent-2) 50%, var(--border));
+  box-shadow: 0 2px 8px color-mix(in oklch, var(--accent-2) 25%, transparent);
+}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <p class="kicker">Garden skills · Web design engineer</p>
+      <h1>开奖笔记 · 轮盘标注</h1>
+      <p class="subtitle">
+        用<strong>栈</strong>记住最近 <strong><span data-stack-cap-num>10</span> 盘</strong>：在下面输入<strong>最新</strong>号码，点「记入」会<strong>压栈</strong>；超过 <strong><span data-stack-cap-num>10</span> 条</strong>时<strong>最旧的那条自动出局</strong>（像栈底被挤掉）。下方预览条<strong>左新 → 右旧</strong>；「第几盘」仍按时间从旧到新编号（第 1 盘最久）。
+      </p>
+    </header>
+
+    <div class="layout">
+      <aside class="panel" aria-labelledby="hist-title">
+        <h2 id="hist-title">开奖栈 <span class="badge" aria-hidden="true" id="stackCapBadge">×10</span></h2>
+        <p class="hint" id="hist-hint">仅在「最新一盘」输入 0–36；每次「记入」把该数字压入栈顶方向（时间最新在栈尾），满 10 条则移除最旧一条。</p>
+        <div class="stack-in" role="group" aria-labelledby="latest-label">
+          <label id="latest-label" for="latestSpin">最新一盘开奖号</label>
+          <div class="stack-input-row">
+            <input
+              type="text"
+              id="latestSpin"
+              name="latestSpin"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="0–36"
+              maxlength="2"
+              aria-describedby="hist-hint"
+              aria-label="最新一盘开奖号码，0 到 36"
+            />
+            <button type="button" class="btn btn-primary" id="btnPush">记入</button>
+          </div>
+        </div>
+        <div class="stack-preview-wrap">
+          <span class="stack-preview-label">当前栈（左新 → 右旧）· 标签上「第N盘」仍为时间顺序（第1盘最旧）</span>
+          <div class="stack-preview" id="stackPreview" aria-live="polite"></div>
+        </div>
+        <div class="panel-actions">
+          <button type="button" class="btn" id="btnPop" title="丢掉当前最新的一条">撤销最新</button>
+          <button type="button" class="btn" id="btnClear">清空栈</button>
+        </div>
+        <div class="stack-cap-setting" aria-labelledby="stack-cap-label">
+          <label id="stack-cap-label" for="stackCapInput">栈上限（盘）</label>
+          <div class="stack-cap-row">
+            <input
+              type="number"
+              id="stackCapInput"
+              name="stackCap"
+              inputmode="numeric"
+              autocomplete="off"
+              min="1"
+              max="99"
+              value="10"
+              aria-describedby="stack-cap-note"
+              title="记入条数不得超过此上限，超出则从最旧开始丢弃"
+            />
+            <span class="stack-cap-setting-hint" id="stack-cap-note"
+              >1–99，仅存本机浏览器。改小会立即删掉超出上限的最旧开奖。</span
+            >
+          </div>
+        </div>
+        <section class="color-stats" id="colorStatsPanel" aria-labelledby="color-stats-title">
+          <h3 id="color-stats-title">历史颜色占比</h3>
+          <p class="note" id="colorStatsNote"></p>
+          <p class="note warn" id="colorStatsWarn" hidden></p>
+          <div id="colorStatsRows"></div>
+        </section>
+        <section class="color-stats" id="oeStatsPanel" aria-labelledby="oe-stats-title">
+          <h3 id="oe-stats-title">单双占比</h3>
+          <p class="note" id="oeStatsNote"></p>
+          <div id="oeStatsRows"></div>
+        </section>
+
+        <section class="strategy-lens" id="strategyLensPanel" aria-labelledby="strategy-lens-title">
+          <h3 id="strategy-lens-title">策略透镜 <span class="badge soft" aria-hidden="true">启发式</span></h3>
+          <p class="hint" id="strategyLensHint">
+            并列展示：<strong>公平结构（格数÷37）</strong>、当前栈的<strong>法式三区样本占比</strong>，以及栈内频次上<strong>默认叠加顺势跟随（连击≥2）</strong>后的<strong>策略权重</strong>。<strong>轮盘下方分列两种推演</strong>：边际五色融合 vs 圆周最短弧步长外推（皆练习用）；<strong>不表示</strong>下一盘真实概率或物理结果。
+          </p>
+          <p class="note" id="strategyLensNote"></p>
+          <div id="strategyLensEmpty" class="strategy-empty" hidden>
+            <p class="strategy-empty-msg">
+              记入至少一盘后，可见随数据更新的<strong>栈内样本</strong>与<strong>策略权重</strong>；上方公平结构仅供对照。
+            </p>
+          </div>
+          <div id="strategyLensBody" class="strategy-lens-body" hidden aria-live="polite">
+            <div class="strategy-summary" id="strategySummary" role="status"></div>
+            <div class="strategy-dual-block">
+              <h4 class="strategy-subheading">三区 · 公平结构（理论）</h4>
+              <p class="strategy-micro-note">各占格数除以 37，<strong>不随录入变化</strong>。</p>
+              <div id="strategyTheorySectorRows"></div>
+              <h4 class="strategy-subheading strategy-subheading-tier2">三区 · 栈内样本</h4>
+              <p class="strategy-micro-note" id="strategySampleSectorNote"></p>
+              <div id="strategySampleSectorRows"></div>
+            </div>
+            <div class="strategy-dual-block strategy-dual-accent">
+              <h4 class="strategy-subheading">三区 · 策略权重</h4>
+              <p class="strategy-micro-note" id="strategyPolicySectorFoot"></p>
+              <div id="strategyPolicySectorRows"></div>
+            </div>
+            <details class="strategy-details">
+              <summary>号码权重（Top‑8）</summary>
+              <p class="strategy-micro-note" id="strategyTopNote"></p>
+              <ul id="strategyTopNums" class="strategy-top-list"></ul>
+              <details class="strategy-details strategy-details-nested">
+                <summary>展开全部 37 个号码</summary>
+                <ul id="strategyAllNums" class="strategy-all-list"></ul>
+              </details>
+            </details>
+          </div>
+        </section>
+
+        <section class="dup-summary" id="dupSummarySection" aria-labelledby="dup-summary-title" hidden>
+          <h3 id="dup-summary-title">重复号码 · 盘次明细</h3>
+          <p class="dup-note">同一号码多次出现时列出盘次，顺序与下方栈中「第几盘」一致。</p>
+          <ul id="dupSummaryList"></ul>
+        </section>
+        <p class="status" id="statusLine" role="status" aria-live="polite"></p>
+      </aside>
+
+      <section class="wheel-col">
+        <div class="wheel-sticker">
+          <div class="wheel-wrap" id="wheelWrap" aria-label="欧式轮盘与开奖标注"></div>
+          <div class="legend">
+            <span><i class="dot green"></i> 绿 0</span>
+            <span><i class="dot red"></i> 红</span>
+            <span><i class="dot black"></i> 黑</span>
+            <span><i class="dot marker"></i> 外圈虚线 = 盘次标签</span>
+            <span>浅绿高光 = 策略透镜推荐的法式赛道区（启发式）</span>
+          </div>
+          <div id="fusionWheelBlock" class="fusion-under-wheel" hidden>
+            <div class="fusion-under-wheel-title" id="fusionWheelTitle">边际融合推演</div>
+            <p class="fusion-under-wheel-nums" id="fusionNumsLine" aria-live="polite"></p>
+            <p class="fusion-under-wheel-hint">
+              <strong>边际融合</strong>：五项相乘后再归一排序（三色、单·双·零、栈内三区摊分、策略三区摊分、单号频次平滑）。与「号码权重」不同。边际上大热区同色同双号码可能并列高分；并非漏算。同得分时再比栈频与序号。
+            </p>
+          </div>
+          <div id="phyWheelBlock" class="fusion-under-wheel phy-under-wheel" hidden>
+            <div class="fusion-under-wheel-title" id="phyWheelTitle">圆周步长推演</div>
+            <p class="fusion-under-wheel-nums" id="phyNumsLine" aria-live="polite"></p>
+            <p class="fusion-under-wheel-hint">
+              <strong>圆周步长</strong>：仅用<strong>最近 3 盘</strong>内相邻开奖（至多 2 次跳转）。对每个跳转，在同一张轮盘圆周上计算<strong>前进步数</strong>（顺时针、`(ib−ia)%37`）与<strong>后退步数</strong>（逆时针弧长、`(ia−ib)%37`）；从<strong>最新一盘</strong>的段位<strong>顺时针走前进步数</strong>得目标 A，<strong>顺时针走后退步数</strong>得目标 B。对 A、B 各打一记高斯核后按 50%︰50% 混合再累加 γ 龄加权，归一排 Top‑20。同城两向均为 0 时二路重合。离散示意，非力学仿真。
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 顺时针顺序：自 0（绿）起。
+     */
+    const CLOCKWISE_POCKETS = [
+      { n: 0, c: "green" },
+      { n: 32, c: "red" }, { n: 15, c: "black" }, { n: 19, c: "red" }, { n: 4, c: "black" },
+      { n: 21, c: "red" }, { n: 2, c: "black" }, { n: 25, c: "red" }, { n: 17, c: "black" },
+      { n: 34, c: "red" }, { n: 6, c: "black" }, { n: 27, c: "red" }, { n: 13, c: "black" },
+      { n: 36, c: "red" }, { n: 11, c: "black" }, { n: 30, c: "red" }, { n: 8, c: "black" },
+      { n: 23, c: "red" }, { n: 10, c: "black" }, { n: 5, c: "red" }, { n: 24, c: "black" },
+      { n: 16, c: "red" }, { n: 33, c: "black" }, { n: 1, c: "red" }, { n: 20, c: "black" },
+      { n: 14, c: "red" }, { n: 31, c: "black" }, { n: 9, c: "red" }, { n: 22, c: "black" },
+      { n: 18, c: "red" }, { n: 29, c: "black" }, { n: 7, c: "red" }, { n: 28, c: "black" },
+      { n: 12, c: "red" }, { n: 35, c: "black" }, { n: 3, c: "red" }, { n: 26, c: "black" },
+    ];
+
+    const COLORS = {
+      green: "#0d8f4a",
+      red: "#c41e3a",
+      black: "#15151a",
+    };
+
+    const NUM_TO_SEGMENT = {};
+    const NUM_POCKET_COLOR = {};
+    CLOCKWISE_POCKETS.forEach((p, i) => {
+      NUM_TO_SEGMENT[p.n] = i;
+      NUM_POCKET_COLOR[p.n] = p.c;
+    });
+
+    /** 法式赛道三分区 — 并为 37 格的划分（与多数教材一致）。 */
+    const RACETRACK_SECTORS = [
+      {
+        id: "voisins",
+        labelShort: "邻近零",
+        labelMed: "邻近零 · Voisins",
+        statsClass: "strategy-voisins",
+        numbers: new Set([22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]),
+      },
+      {
+        id: "tiers",
+        labelShort: "对零弧",
+        labelMed: "对零弧 · Tiers",
+        statsClass: "strategy-tiers",
+        numbers: new Set([27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]),
+      },
+      {
+        id: "orphelins",
+        labelShort: "孤儿",
+        labelMed: "孤儿 · Orphelins",
+        statsClass: "strategy-orphelins",
+        numbers: new Set([6, 34, 17, 1, 20, 14, 31, 9]),
+      },
+    ];
+
+    (function validateRacetrackPartition() {
+      const seen = new Set();
+      for (const sec of RACETRACK_SECTORS) {
+        for (const n of sec.numbers) {
+          if (seen.has(n)) {
+            console.assert(false, "[策略透镜] 赛道分区号码重复：" + n);
+            return;
+          }
+          seen.add(n);
+        }
+      }
+      if (seen.size !== 37) {
+        console.assert(false, "[策略透镜] 赛道分区并集应为 37 号，实为 " + seen.size);
+      }
+    })();
+
+    const NUM_TO_TRACK_SECTOR_ID = {};
+    RACETRACK_SECTORS.forEach((sec) => {
+      sec.numbers.forEach((n) => {
+        NUM_TO_TRACK_SECTOR_ID[n] = sec.id;
+      });
+    });
+
+    const RACETRACK_BY_ID = Object.fromEntries(RACETRACK_SECTORS.map((s) => [s.id, s]));
+
+    const TREND_FAVOR_WEIGHT = 1.4;
+    const TREND_UNFAVOR_WEIGHT = 0.88;
+    const TREND_ZERO_WEIGHT = 1;
+    /** 策略透镜固定为顺势跟随；连击低于此阈值时不乘红黑趋势。 */
+    const STRATEGY_LENS_TREND_MODE = "follow";
+    const STRATEGY_LENS_STREAK_MIN = 2;
+    /** 「下一盘推演」列表截取前若干名（≤37）。 */
+    const STRATEGY_FUSION_TOP_K = 20;
+    /** 圆周步长推演：较新相邻盘对的权重衰减（越新权越大）。 */
+    const PHY_STEP_WEIGHT_DECAY = 0.9;
+    /** 圆周步长核 exp(-d²/2σ²) 的 σ（格数）。 */
+    const PHY_STEP_KERNEL_SIGMA = 3;
+    /** 「前进」「后退」两路目标的混合：顺时针目标权 / (顺+逆)。 */
+    const PHY_STEP_DUAL_FWD_SHARE = 0.5;
+    /** 仅使用最近 k 盘开奖所形成的相邻跳转（共最多 k−1 对）；k=3 → 仅用最新两跳的 Δ。 */
+    const PHY_STEP_LAST_SPINS = 3;
+
+    function computeRbStreakFromNewest(stack) {
+      const len = stack.length;
+      if (len === 0) return { streakColor: null, streakLen: 0, latestSpinIsZero: false };
+      const newest = stack[len - 1];
+      if (newest === 0) return { streakColor: null, streakLen: 0, latestSpinIsZero: true };
+      const streakColor = NUM_POCKET_COLOR[newest];
+      if (streakColor !== "red" && streakColor !== "black") {
+        return { streakColor: null, streakLen: 0, latestSpinIsZero: false };
+      }
+      let k = 0;
+      for (let i = len - 1; i >= 0; i--) {
+        const n = stack[i];
+        if (n === 0) break;
+        const c = NUM_POCKET_COLOR[n];
+        if (c === "green") break;
+        if (c !== streakColor) break;
+        k++;
+      }
+      return { streakColor, streakLen: k, latestSpinIsZero: false };
+    }
+
+    function oppositeRb(c) {
+      if (c === "red") return "black";
+      if (c === "black") return "red";
+      return null;
+    }
+
+    function computeSampleSectorFromStack(stack) {
+      const len = stack.length;
+      const pocketCount = new Array(37).fill(0);
+      stack.forEach((v) => {
+        if (v >= 0 && v <= 36) pocketCount[v]++;
+      });
+      const sampleSector = {};
+      const sampleSectorCounts = {};
+      RACETRACK_SECTORS.forEach((sec) => {
+        let c = 0;
+        sec.numbers.forEach((n) => {
+          c += pocketCount[n];
+        });
+        sampleSectorCounts[sec.id] = c;
+        sampleSector[sec.id] = len > 0 ? c / len : 0;
+      });
+      return { pocketCount, sampleSector, sampleSectorCounts, stackLen: len };
+    }
+
+    function computeStrategyLens(stack, opts) {
+      const trendMode = opts.trendMode;
+      const streakThreshold = opts.streakThreshold;
+      const pUniform = 1 / 37;
+      const baselineSector = {};
+      RACETRACK_SECTORS.forEach((sec) => {
+        baselineSector[sec.id] = sec.numbers.size / 37;
+      });
+
+      const { pocketCount, sampleSector, sampleSectorCounts, stackLen } =
+        computeSampleSectorFromStack(stack);
+
+      const priorNum = {};
+      if (stackLen === 0) {
+        for (let n = 0; n <= 36; n++) priorNum[n] = pUniform;
+      } else {
+        for (let n = 0; n <= 36; n++) priorNum[n] = pocketCount[n] / stackLen;
+      }
+
+      const streakInfo = computeRbStreakFromNewest(stack);
+      let favoredRb = null;
+      let trendActive = false;
+      if (trendMode !== "off" && streakInfo.streakLen >= streakThreshold && streakInfo.streakColor) {
+        if (trendMode === "follow") favoredRb = streakInfo.streakColor;
+        else if (trendMode === "fade") favoredRb = oppositeRb(streakInfo.streakColor);
+        if (favoredRb) trendActive = true;
+      }
+
+      const unfavoredRb = favoredRb ? oppositeRb(favoredRb) : null;
+      let sumW = 0;
+      const weightPre = {};
+      for (let n = 0; n <= 36; n++) {
+        const pc = NUM_POCKET_COLOR[n];
+        let mult = 1;
+        if (trendActive) {
+          if (pc === favoredRb) mult = TREND_FAVOR_WEIGHT;
+          else if (pc === unfavoredRb) mult = TREND_UNFAVOR_WEIGHT;
+          else if (pc === "green") mult = TREND_ZERO_WEIGHT;
+        }
+        weightPre[n] = priorNum[n] * mult;
+        sumW += weightPre[n];
+      }
+      if (sumW <= 0) {
+        for (let n = 0; n <= 36; n++) weightPre[n] = pUniform;
+        sumW = 37 * pUniform;
+      }
+      const policyNum = {};
+      for (let n = 0; n <= 36; n++) policyNum[n] = weightPre[n] / sumW;
+
+      const policySector = {};
+      RACETRACK_SECTORS.forEach((sec) => {
+        let ssum = 0;
+        sec.numbers.forEach((n) => {
+          ssum += policyNum[n];
+        });
+        policySector[sec.id] = ssum;
+      });
+
+      let maxProb = -1;
+      RACETRACK_SECTORS.forEach((sec) => {
+        if (policySector[sec.id] > maxProb) maxProb = policySector[sec.id];
+      });
+      const recommendedSectorIds = RACETRACK_SECTORS.filter(
+        (sec) => Math.abs(policySector[sec.id] - maxProb) < 1e-9,
+      ).map((s) => s.id);
+
+      return {
+        baselineUniform: pUniform,
+        baselineSector,
+        sampleSector,
+        sampleSectorCounts,
+        priorNum,
+        policyNum,
+        policySector,
+        recommendedSectorIds,
+        streakInfo,
+        trendActive,
+        favoredRb,
+      };
+    }
+
+    /**
+     * 「边际融合推演」：五项相乘后对 37 格归一排序，截取前 STRATEGY_FUSION_TOP_K 名展示（启发式）。
+     * 1) 历史颜色占比（拉普拉斯 +1）→ 该色共用一因子  2) 单双/+1→ 该类共用一因子
+     * 3) 三区·栈内样本条 → 区占比÷格数，与均匀场混合  4) 三区·策略权重条 → 同上
+     * 5) 栈内单号频次 → (出现次数+1)/(T+37) 与均匀场混合，避免「同区同色同单双」全部并列
+     */
+    function computeFusionNextRanking(stack, lens) {
+      const T = stack.length;
+      const pocketCount = new Array(37).fill(0);
+      stack.forEach((nv) => {
+        if (nv >= 0 && nv <= 36) pocketCount[nv]++;
+      });
+      let r = 0;
+      let b = 0;
+      let gCol = 0;
+      let odd = 0;
+      let eve = 0;
+      let zOE = 0;
+      stack.forEach((n) => {
+        const col = NUM_POCKET_COLOR[n];
+        if (col === "red") r++;
+        else if (col === "black") b++;
+        else gCol++;
+        if (n === 0) zOE++;
+        else if (n % 2 === 1) odd++;
+        else eve++;
+      });
+
+      const k = 1;
+      const pRed = (r + k) / (T + 3 * k);
+      const pBlack = (b + k) / (T + 3 * k);
+      const pGreenCol = (gCol + k) / (T + 3 * k);
+      const pOdd = (odd + k) / (T + 3 * k);
+      const pEven = (eve + k) / (T + 3 * k);
+      const pZeroOE = (zOE + k) / (T + 3 * k);
+
+      const colorFactor = (n) => {
+        const col = NUM_POCKET_COLOR[n];
+        return col === "red" ? pRed : col === "black" ? pBlack : pGreenCol;
+      };
+
+      const oeFactor = (n) => {
+        if (n === 0) return pZeroOE;
+        return n % 2 === 1 ? pOdd : pEven;
+      };
+
+      const capRef = Math.max(1, stackCap);
+      const wSecEmp = Math.min(0.9, Math.max(0.25, T / capRef));
+      const kNum = 1;
+      const denomNum = T + 37 * kNum;
+
+      const raw = [];
+      let sum = 0;
+      for (let n = 0; n <= 36; n++) {
+        const secId = NUM_TO_TRACK_SECTOR_ID[n];
+        const sec = RACETRACK_BY_ID[secId];
+        const sz = sec.numbers.size;
+
+        const fracStack = lens.sampleSector[secId];
+        const empStackSpread = fracStack / sz;
+        const stackSectorF = wSecEmp * empStackSpread + (1 - wSecEmp) / 37;
+
+        const fracPol = lens.policySector[secId];
+        const empPolicySpread = fracPol / sz;
+        const policySectorF = wSecEmp * empPolicySpread + (1 - wSecEmp) / 37;
+
+        const empPocketHist = (pocketCount[n] + kNum) / denomNum;
+        const pocketHistF = wSecEmp * empPocketHist + (1 - wSecEmp) / 37;
+
+        const cF = colorFactor(n);
+        const oeF = oeFactor(n);
+        const v = stackSectorF * policySectorF * cF * oeF * pocketHistF;
+        raw.push({
+          n,
+          v,
+          stackSectorF,
+          policySectorF,
+          cF,
+          oeF,
+          pocketHistF,
+        });
+        sum += v;
+      }
+
+      if (sum <= 0 || !Number.isFinite(sum)) {
+        const uni = [];
+        for (let n = 0; n <= 36; n++)
+          uni.push({
+            n,
+            p: 1 / 37,
+            stackSectorF: 1 / 37,
+            policySectorF: 1 / 37,
+            cF: 1,
+            oeF: 1,
+            pocketHistF: 1,
+          });
+        uni.sort((a, b) => b.p - a.p || a.n - b.n);
+        return { ranked: uni };
+      }
+
+      const staged = raw.map((row) => ({
+        n: row.n,
+        rawV: row.v,
+        hits: pocketCount[row.n],
+        stackSectorF: row.stackSectorF,
+        policySectorF: row.policySectorF,
+        cF: row.cF,
+        oeF: row.oeF,
+        pocketHistF: row.pocketHistF,
+      }));
+      staged.sort((a, b) => {
+        const dv = b.rawV - a.rawV;
+        if (Math.abs(dv) > 1e-14) return dv;
+        if (b.hits !== a.hits) return b.hits - a.hits;
+        return a.n - b.n;
+      });
+      const ranked = staged.map(({ rawV: _rv, hits: _h, ...rest }) => ({
+        ...rest,
+        p: _rv / sum,
+      }));
+
+      return { ranked };
+    }
+
+    function wheelCircSegDist(ia, ib) {
+      const d = Math.abs(ia - ib);
+      return Math.min(d, 37 - d);
+    }
+
+    /** 圆上按 CLOCKWISE_POCKETS 顺位，逆时针方向走到另一号所需弧长（步数）；与 clockwise 相加为 37（同城为 0）。 */
+    function wheelForwardBackSteps(fromNum, toNum) {
+      const ia = NUM_TO_SEGMENT[fromNum];
+      const ib = NUM_TO_SEGMENT[toNum];
+      const fwdSteps = (ib - ia + 37) % 37;
+      const backSteps = (ia - ib + 37) % 37;
+      return { fwdSteps, backSteps };
+    }
+
+    /**
+     * 圆周步长推演：最近若干盘内每条相邻开奖同时取「顺时针步」「逆时针步」，从最新一盘各提一目标，
+     * 顺/逆二路高斯核加权混合后经 γ 衰减累计，归一排序（启发式）。
+     */
+    function computeWheelGeometryRanking(stack) {
+      const T = stack.length;
+      const pocketCount = new Array(37).fill(0);
+      stack.forEach((nv) => {
+        if (nv >= 0 && nv <= 36) pocketCount[nv]++;
+      });
+      if (T < 2) return { ranked: [], usable: false };
+
+      const pairs = [];
+      let wSum = 0;
+      const jLow = Math.max(0, T - PHY_STEP_LAST_SPINS);
+      const jHigh = T - 2;
+      for (let j = jLow; j <= jHigh; j++) {
+        const a = stack[j];
+        const b = stack[j + 1];
+        if (a < 0 || a > 36 || b < 0 || b > 36) continue;
+        const { fwdSteps, backSteps } = wheelForwardBackSteps(a, b);
+        const age = jHigh - j;
+        const w = PHY_STEP_WEIGHT_DECAY ** age;
+        pairs.push({ fwdSteps, backSteps, w });
+        wSum += w;
+      }
+      if (wSum <= 0 || pairs.length === 0) return { ranked: [], usable: false };
+
+      const L = stack[T - 1];
+      if (L < 0 || L > 36) return { ranked: [], usable: false };
+      const sL = NUM_TO_SEGMENT[L];
+      const twoSigmaSq = 2 * PHY_STEP_KERNEL_SIGMA * PHY_STEP_KERNEL_SIGMA;
+
+      const raw = [];
+      let scoreSum = 0;
+      for (let n = 0; n <= 36; n++) {
+        const sn = NUM_TO_SEGMENT[n];
+        let s = 0;
+        for (const { fwdSteps, backSteps, w } of pairs) {
+          const tgtFwd = ((((sL + fwdSteps) % 37) + 37) % 37);
+          const tgtBack = ((((sL + backSteps) % 37) + 37) % 37);
+          const dF = wheelCircSegDist(sn, tgtFwd);
+          const dB = wheelCircSegDist(sn, tgtBack);
+          const kF = Math.exp(-(dF * dF) / twoSigmaSq);
+          const kB = Math.exp(-(dB * dB) / twoSigmaSq);
+          s +=
+            (w / wSum) *
+            (PHY_STEP_DUAL_FWD_SHARE * kF + (1 - PHY_STEP_DUAL_FWD_SHARE) * kB);
+        }
+        raw.push({ n, v: s, hits: pocketCount[n] });
+        scoreSum += s;
+      }
+
+      if (scoreSum <= 0 || !Number.isFinite(scoreSum)) {
+        const uni = [];
+        for (let n = 0; n <= 36; n++) uni.push({ n, p: 1 / 37 });
+        uni.sort(
+          (a, b) =>
+            b.p - a.p || pocketCount[b.n] - pocketCount[a.n] || a.n - b.n,
+        );
+        return { ranked: uni, usable: true };
+      }
+
+      const staged = raw.map((row) => ({ ...row }));
+      staged.sort((a, b) => {
+        const dv = b.v - a.v;
+        if (Math.abs(dv) > 1e-14) return dv;
+        if (b.hits !== a.hits) return b.hits - a.hits;
+        return a.n - b.n;
+      });
+      const ranked = staged.map(({ n, v }) => ({ n, p: v / scoreSum }));
+      return { ranked, usable: true };
+    }
+
+    const NS = "http://www.w3.org/2000/svg";
+    const SIZE = 500;
+    const VIEW_PAD = 52;
+    const cx = SIZE / 2;
+    const cy = SIZE / 2;
+    const rFrame = 248;
+    const rPocketOuter = 228;
+    const rPocketInner = 118;
+    const rHub = 44;
+    const rDivider = 234;
+    const N = CLOCKWISE_POCKETS.length;
+    const slice = (2 * Math.PI) / N;
+
+    function polarToCart(r, angleRad) {
+      return {
+        x: cx + r * Math.cos(angleRad),
+        y: cy + r * Math.sin(angleRad),
+      };
+    }
+
+    function segmentPath(i) {
+      const a0 = -Math.PI / 2 + i * slice;
+      const a1 = a0 + slice;
+      const p0o = polarToCart(rPocketOuter, a0);
+      const p1o = polarToCart(rPocketOuter, a1);
+      const p0i = polarToCart(rPocketInner, a0);
+      const p1i = polarToCart(rPocketInner, a1);
+      const large = 0;
+      return [
+        `M ${p0i.x} ${p0i.y}`,
+        `L ${p0o.x} ${p0o.y}`,
+        `A ${rPocketOuter} ${rPocketOuter} 0 ${large} 1 ${p1o.x} ${p1o.y}`,
+        `L ${p1i.x} ${p1i.y}`,
+        `A ${rPocketInner} ${rPocketInner} 0 ${large} 0 ${p0i.x} ${p0i.y}`,
+        "Z",
+      ].join(" ");
+    }
+
+    function labelTransform(i) {
+      const mid = -Math.PI / 2 + (i + 0.5) * slice;
+      const tr = (rPocketInner + rPocketOuter) / 2;
+      const { x, y } = polarToCart(tr, mid);
+      const deg = (mid * 180) / Math.PI + 90;
+      return `translate(${x}, ${y}) rotate(${deg})`;
+    }
+
+    function segmentMidAngle(i) {
+      return -Math.PI / 2 + (i + 0.5) * slice;
+    }
+
+    const STACK_CAP_DEFAULT = 10;
+    const STACK_CAP_MIN = 1;
+    const STACK_CAP_MAX = 99;
+    const STACK_CAP_LS_KEY = "roulette-note-stack-cap";
+
+    function clampStackCap(v) {
+      const x = typeof v === "number" ? v : Number.parseInt(String(v).trim(), 10);
+      if (!Number.isFinite(x)) return STACK_CAP_DEFAULT;
+      return Math.min(STACK_CAP_MAX, Math.max(STACK_CAP_MIN, Math.floor(x)));
+    }
+
+    function loadStackCap() {
+      try {
+        const raw = localStorage.getItem(STACK_CAP_LS_KEY);
+        if (raw == null || raw === "") return STACK_CAP_DEFAULT;
+        return clampStackCap(raw);
+      } catch (_) {
+        return STACK_CAP_DEFAULT;
+      }
+    }
+
+    function persistStackCap() {
+      try {
+        localStorage.setItem(STACK_CAP_LS_KEY, String(stackCap));
+      } catch (_) {}
+    }
+
+    let stackCap = loadStackCap();
+
+    /** 内部数组：索引 0 = 最旧（第1盘），末尾 = 最新。展示时从左到右为「新→旧」。 */
+    let historyStack = [];
+
+    function enforceStackCapacity() {
+      while (historyStack.length > stackCap) historyStack.shift();
+    }
+
+    function syncStackCapacityUI() {
+      const inp = document.getElementById("stackCapInput");
+      if (inp) inp.value = String(stackCap);
+      const badge = document.getElementById("stackCapBadge");
+      if (badge) badge.textContent = `×${stackCap}`;
+      document.querySelectorAll("[data-stack-cap-num]").forEach((el) => {
+        el.textContent = String(stackCap);
+      });
+      const hintEl = document.getElementById("hist-hint");
+      if (hintEl) {
+        hintEl.textContent =
+          `仅在「最新一盘」输入 0–36；每次「记入」把该数字压入栈顶方向（时间最新在栈尾），满 ${stackCap} 条则移除最旧一条。`;
+      }
+    }
+
+    function commitStackCapacityFromInput() {
+      const inp = document.getElementById("stackCapInput");
+      stackCap = clampStackCap(inp ? inp.value : stackCap);
+      persistStackCap();
+      enforceStackCapacity();
+      syncStackCapacityUI();
+      refreshFromStack();
+    }
+
+    const statusLine = document.getElementById("statusLine");
+    const latestInput = document.getElementById("latestSpin");
+    const stackPreviewEl = document.getElementById("stackPreview");
+
+    function entriesFromStack() {
+      return historyStack.map((value, idx) => ({ round: idx + 1, value }));
+    }
+
+    function renderStackPreview() {
+      stackPreviewEl.replaceChildren();
+      if (historyStack.length === 0) {
+        const em = document.createElement("span");
+        em.className = "stack-empty";
+        em.textContent = "空栈。输入最新号码后点「记入」压栈。";
+        stackPreviewEl.appendChild(em);
+        return;
+      }
+      for (let k = historyStack.length - 1; k >= 0; k--) {
+        const n = historyStack[k];
+        const idx = k;
+        const chip = document.createElement("span");
+        chip.className = "stack-chip" + (k === historyStack.length - 1 ? " recent" : "");
+        chip.textContent = `${n}（第${idx + 1}盘）`;
+        stackPreviewEl.appendChild(chip);
+      }
+    }
+
+    function tryPushLatest() {
+      latestInput.classList.remove("invalid");
+      const p = parseSpinValue(latestInput.value);
+      if (p.empty) {
+        latestInput.classList.add("invalid");
+        statusLine.className = "status error";
+        statusLine.textContent = "请输入 0–36 的数字后再「记入」。";
+        return false;
+      }
+      if (p.invalid) {
+        latestInput.classList.add("invalid");
+        statusLine.className = "status error";
+        statusLine.textContent = "号码无效：请输入 0–36 的整数。";
+        return false;
+      }
+      historyStack.push(p.value);
+      if (historyStack.length > stackCap) {
+        historyStack.shift();
+      }
+      latestInput.value = "";
+      latestInput.focus();
+      return true;
+    }
+
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute(
+      "viewBox",
+      `-${VIEW_PAD} -${VIEW_PAD} ${SIZE + 2 * VIEW_PAD} ${SIZE + 2 * VIEW_PAD}`,
+    );
+
+    const defs = document.createElementNS(NS, "defs");
+    const woodGrad = document.createElementNS(NS, "radialGradient");
+    woodGrad.setAttribute("id", "wood");
+    woodGrad.innerHTML =
+      '<stop offset="0%" stop-color="#4a3424"/><stop offset="70%" stop-color="#2d1f14"/><stop offset="100%" stop-color="#1a120c"/>';
+    defs.appendChild(woodGrad);
+
+    const hubGrad = document.createElementNS(NS, "radialGradient");
+    hubGrad.setAttribute("id", "hub");
+    hubGrad.innerHTML =
+      '<stop offset="0%" stop-color="#d8dce0"/><stop offset="55%" stop-color="#9aa3ac"/><stop offset="100%" stop-color="#6b7580"/>';
+    defs.appendChild(hubGrad);
+
+    const stickerShadow = document.createElementNS(NS, "filter");
+    stickerShadow.setAttribute("id", "stickerShadow");
+    stickerShadow.setAttribute("x", "-25%");
+    stickerShadow.setAttribute("y", "-25%");
+    stickerShadow.setAttribute("width", "150%");
+    stickerShadow.setAttribute("height", "150%");
+    stickerShadow.innerHTML =
+      '<feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#6b5420" flood-opacity="0.24"/>';
+    defs.appendChild(stickerShadow);
+    svg.appendChild(defs);
+
+    const frame = document.createElementNS(NS, "circle");
+    frame.setAttribute("cx", cx);
+    frame.setAttribute("cy", cy);
+    frame.setAttribute("r", rFrame);
+    frame.setAttribute("fill", "none");
+    frame.setAttribute("stroke", "#8a9299");
+    frame.setAttribute("stroke-width", "10");
+    svg.appendChild(frame);
+
+    const track = document.createElementNS(NS, "circle");
+    track.setAttribute("cx", cx);
+    track.setAttribute("cy", cy);
+    track.setAttribute("r", (rPocketOuter + rFrame) / 2 + 2);
+    track.setAttribute("fill", "none");
+    track.setAttribute("stroke", "url(#wood)");
+    track.setAttribute("stroke-width", rFrame - rPocketOuter + 6);
+    svg.appendChild(track);
+
+    const ringBg = document.createElementNS(NS, "circle");
+    ringBg.setAttribute("cx", cx);
+    ringBg.setAttribute("cy", cy);
+    ringBg.setAttribute("r", rDivider + 2);
+    ringBg.setAttribute("fill", "#0a0a0c");
+    svg.appendChild(ringBg);
+
+    const gPockets = document.createElementNS(NS, "g");
+    gPockets.setAttribute("class", "pockets");
+    CLOCKWISE_POCKETS.forEach((p, i) => {
+      const path = document.createElementNS(NS, "path");
+      path.setAttribute("d", segmentPath(i));
+      path.setAttribute("fill", COLORS[p.c]);
+      path.setAttribute("stroke", "rgba(255,255,255,0.12)");
+      path.setAttribute("stroke-width", "0.8");
+      gPockets.appendChild(path);
+    });
+    svg.appendChild(gPockets);
+
+    const gStrategyHighlight = document.createElementNS(NS, "g");
+    gStrategyHighlight.setAttribute("id", "strategyHighlight");
+    gStrategyHighlight.setAttribute("pointer-events", "none");
+    svg.appendChild(gStrategyHighlight);
+
+    const gHistoryFill = document.createElementNS(NS, "g");
+    gHistoryFill.setAttribute("id", "historyFill");
+    gHistoryFill.setAttribute("pointer-events", "none");
+    svg.appendChild(gHistoryFill);
+
+    const gDividers = document.createElementNS(NS, "g");
+    for (let i = 0; i < N; i++) {
+      const a = -Math.PI / 2 + i * slice;
+      const pInner = polarToCart(rPocketInner - 2, a);
+      const pOuter = polarToCart(rPocketOuter + 1, a);
+      const line = document.createElementNS(NS, "line");
+      line.setAttribute("x1", pInner.x);
+      line.setAttribute("y1", pInner.y);
+      line.setAttribute("x2", pOuter.x);
+      line.setAttribute("y2", pOuter.y);
+      line.setAttribute("stroke", "rgba(200, 205, 212, 0.55)");
+      line.setAttribute("stroke-width", "1.2");
+      gDividers.appendChild(line);
+    }
+    svg.appendChild(gDividers);
+
+    const gLabels = document.createElementNS(NS, "g");
+    gLabels.setAttribute("class", "labels");
+    CLOCKWISE_POCKETS.forEach((p, i) => {
+      const text = document.createElementNS(NS, "text");
+      text.textContent = String(p.n);
+      text.setAttribute("transform", labelTransform(i));
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "central");
+      text.setAttribute("fill", "#f5f7fa");
+      text.setAttribute("font-size", p.n === 0 ? "15" : "13");
+      text.setAttribute("font-weight", "600");
+      text.setAttribute("font-family", "Segoe UI, PingFang SC, Microsoft YaHei, sans-serif");
+      gLabels.appendChild(text);
+    });
+    svg.appendChild(gLabels);
+
+    const gHistoryBadges = document.createElementNS(NS, "g");
+    gHistoryBadges.setAttribute("id", "historyBadges");
+    gHistoryBadges.setAttribute("pointer-events", "none");
+    svg.appendChild(gHistoryBadges);
+
+    const hub = document.createElementNS(NS, "circle");
+    hub.setAttribute("cx", cx);
+    hub.setAttribute("cy", cy);
+    hub.setAttribute("r", rHub);
+    hub.setAttribute("fill", "url(#hub)");
+    hub.setAttribute("stroke", "#5a636c");
+    hub.setAttribute("stroke-width", "2");
+    svg.appendChild(hub);
+
+    const hubCross = document.createElementNS(NS, "g");
+    hubCross.setAttribute("stroke", "#7a828a");
+    hubCross.setAttribute("stroke-width", "3");
+    hubCross.setAttribute("stroke-linecap", "round");
+    const crossLen = rHub * 0.85;
+    [["v", 0, -crossLen, 0, crossLen], ["h", -crossLen, 0, crossLen, 0]].forEach(([__, x1, y1, x2, y2]) => {
+      const ln = document.createElementNS(NS, "line");
+      ln.setAttribute("x1", cx + x1);
+      ln.setAttribute("y1", cy + y1);
+      ln.setAttribute("x2", cx + x2);
+      ln.setAttribute("y2", cy + y2);
+      hubCross.appendChild(ln);
+    });
+    svg.appendChild(hubCross);
+
+    const gHistoryOutside = document.createElementNS(NS, "g");
+    gHistoryOutside.setAttribute("id", "historyOutside");
+    gHistoryOutside.setAttribute("pointer-events", "none");
+    svg.appendChild(gHistoryOutside);
+
+    document.getElementById("wheelWrap").appendChild(svg);
+
+    function parseSpinValue(raw) {
+      const t = String(raw).trim();
+      if (t === "") return { empty: true };
+      const n = Number.parseInt(t, 10);
+      if (!Number.isFinite(n) || String(n) !== t || n < 0 || n > 36) {
+        return { invalid: true };
+      }
+      return { value: n };
+    }
+
+    function formatProbPct(x) {
+      return `${(100 * x).toFixed(2)}%`;
+    }
+
+    function renderStrategyWheelOverlay(recommendedSectorIds) {
+      gStrategyHighlight.replaceChildren();
+      if (!recommendedSectorIds || recommendedSectorIds.length === 0) return;
+      const pocketSet = new Set();
+      recommendedSectorIds.forEach((secId) => {
+        const sec = RACETRACK_BY_ID[secId];
+        if (!sec) return;
+        sec.numbers.forEach((n) => pocketSet.add(n));
+      });
+      CLOCKWISE_POCKETS.forEach((p, i) => {
+        if (!pocketSet.has(p.n)) return;
+        const path = document.createElementNS(NS, "path");
+        path.setAttribute("d", segmentPath(i));
+        path.setAttribute("fill", "rgba(65, 135, 115, 0.18)");
+        path.setAttribute("stroke", "rgba(45, 110, 95, 0.55)");
+        path.setAttribute("stroke-width", "2.2");
+        path.setAttribute("stroke-linejoin", "round");
+        gStrategyHighlight.appendChild(path);
+      });
+    }
+
+    function renderStrategyLens() {
+      const emptyEl = document.getElementById("strategyLensEmpty");
+      const bodyEl = document.getElementById("strategyLensBody");
+      const noteEl = document.getElementById("strategyLensNote");
+      const summaryEl = document.getElementById("strategySummary");
+      const theoryRows = document.getElementById("strategyTheorySectorRows");
+      const sampleRows = document.getElementById("strategySampleSectorRows");
+      const policyRows = document.getElementById("strategyPolicySectorRows");
+      const policyFoot = document.getElementById("strategyPolicySectorFoot");
+      const topNote = document.getElementById("strategyTopNote");
+      const topList = document.getElementById("strategyTopNums");
+      const allList = document.getElementById("strategyAllNums");
+
+      if (historyStack.length === 0) {
+        emptyEl.hidden = false;
+        bodyEl.hidden = true;
+        noteEl.textContent =
+          "尚未录入开奖。记入后「栈内样本」「策略权重」会随数据更新；公平结构条不随录入变化。短栈仅供参考。";
+        document.getElementById("fusionWheelBlock").hidden = true;
+        document.getElementById("fusionNumsLine").textContent = "";
+        document.getElementById("phyWheelBlock").hidden = true;
+        document.getElementById("phyNumsLine").textContent = "";
+        document.getElementById("phyNumsLine").classList.remove("phy-pending");
+        renderStrategyWheelOverlay([]);
+        return;
+      }
+
+      emptyEl.hidden = true;
+      bodyEl.hidden = false;
+
+      const trendMode = STRATEGY_LENS_TREND_MODE;
+      const streakThreshold = STRATEGY_LENS_STREAK_MIN;
+
+      const lens = computeStrategyLens(historyStack, { trendMode, streakThreshold });
+      const {
+        baselineSector,
+        sampleSector,
+        sampleSectorCounts,
+        policySector,
+        policyNum,
+        priorNum,
+        recommendedSectorIds,
+        streakInfo,
+        trendActive,
+      } = lens;
+
+      document.getElementById("strategySampleSectorNote").textContent =
+        `按当前栈 ${historyStack.length} 盘：各号码落在哪一法式区即计入该区；占比 = 该区盘次 ÷ 栈长（随每次记入变化）。`;
+
+      let sampleNote = `当前栈 ${historyStack.length} 盘（上限 ${stackCap}），属极短序列：固定<strong>顺势跟随</strong>，不代表随机规律。`;
+      if (historyStack.length <= 3) sampleNote += " 样本过短，建议谨慎解读。";
+      noteEl.textContent = sampleNote;
+
+      const names = recommendedSectorIds.map((id) => RACETRACK_BY_ID[id].labelShort).join("、");
+      const primaryId = recommendedSectorIds[0];
+      const pptDiffVsSample =
+        primaryId !== undefined && trendActive
+          ? (100 * (policySector[primaryId] - sampleSector[primaryId])).toFixed(2)
+          : "0";
+      const pptDiffVsTheory =
+        primaryId !== undefined
+          ? (100 * (policySector[primaryId] - baselineSector[primaryId])).toFixed(2)
+          : "0";
+
+      let summary;
+      if (!trendActive) {
+        summary =
+          recommendedSectorIds.length > 1
+            ? `顺势未叠加：三区策略与<strong>栈内样本</strong>一致，并列最高为「${names}」（各约 ${recommendedSectorIds
+                .map((id) => formatProbPct(policySector[id]))
+                .join("、")}）。`
+            : `顺势未叠加：三区策略与栈内样本一致，相对最高为「${names}」（${formatProbPct(
+                policySector[primaryId],
+              )}）。与公平结构（格数÷37）的差异仅来自你的录入分布。`;
+      } else {
+        summary =
+          recommendedSectorIds.length > 1
+            ? `顺势跟随已叠加：并列相对较高 ${names}。相对<strong>栈内样本</strong>分区约 ${pptDiffVsSample >= 0 ? "+" : ""}${pptDiffVsSample} 个百分点；相对公平结构约 ${pptDiffVsTheory >= 0 ? "+" : ""}${pptDiffVsTheory} 个百分点（仅示意）。`
+            : `顺势跟随已叠加：相对偏高 ${names}。相对栈内样本约 ${pptDiffVsSample >= 0 ? "+" : ""}${pptDiffVsSample} 个百分点；相对公平结构约 ${pptDiffVsTheory >= 0 ? "+" : ""}${pptDiffVsTheory} 个百分点（仅示意，非下注优势）。`;
+      }
+
+      const rbLabel = (c) => (c === "red" ? "红" : c === "black" ? "黑" : "");
+      let trendSentence = "";
+      if (streakInfo.latestSpinIsZero) {
+        trendSentence = " 最新一盘为 0：无红黑连击，顺势未叠加。";
+      } else if (streakInfo.streakColor && streakInfo.streakLen >= 1) {
+        trendSentence = ` 自最新端起算${rbLabel(streakInfo.streakColor)}连击长度 ${streakInfo.streakLen}。`;
+        if (!trendActive) {
+          trendSentence += `未满足连击≥${streakThreshold}或条件不足：仍为纯栈内频次，无红黑乘子。`;
+        }
+        if (trendActive) {
+          const favCn = rbLabel(lens.favoredRb);
+          trendSentence += ` 顺势跟随已向 ${favCn} 集倾斜（启发式权重 ${TREND_FAVOR_WEIGHT}/${TREND_UNFAVOR_WEIGHT}）。`;
+        }
+      }
+
+      summaryEl.textContent = summary + trendSentence;
+
+      theoryRows.replaceChildren();
+      RACETRACK_SECTORS.forEach((sec) => {
+        const p = baselineSector[sec.id];
+        const pctNum = 100 * p;
+        const row = document.createElement("div");
+        row.className = "stat-row";
+        row.innerHTML = `
+          <span class="stat-label" title="${sec.labelMed}">${sec.labelShort}</span>
+          <div class="stat-bar-wrap" role="presentation">
+            <div class="stat-bar ${sec.statsClass}" style="width:${pctNum}%"></div>
+          </div>
+          <span class="stat-meta"><strong>${sec.numbers.size}</strong> 格 · ${formatProbPct(p)}</span>
+        `;
+        theoryRows.appendChild(row);
+      });
+
+      sampleRows.replaceChildren();
+      RACETRACK_SECTORS.forEach((sec) => {
+        const p = sampleSector[sec.id];
+        const cnt = sampleSectorCounts[sec.id];
+        const pctNum = 100 * p;
+        const row = document.createElement("div");
+        row.className = "stat-row";
+        row.innerHTML = `
+          <span class="stat-label" title="${sec.labelMed}">${sec.labelShort}</span>
+          <div class="stat-bar-wrap" role="presentation">
+            <div class="stat-bar ${sec.statsClass}" style="width:${pctNum}%"></div>
+          </div>
+          <span class="stat-meta"><strong>${cnt}</strong> 次 · ${formatProbPct(p)}</span>
+        `;
+        sampleRows.appendChild(row);
+      });
+
+      const policyDesc = trendActive
+        ? `顺势跟随已叠加（连击≥${streakThreshold}）：在栈内频次先验上再乘红黑权重并归一，再汇总到三区。`
+        : `顺势跟随未生效（未达连击≥${streakThreshold}或最新一盘为 0 等）：号码先验仍为栈内频次；三区策略与「栈内样本」条一致。`;
+      policyFoot.textContent = policyDesc;
+
+      policyRows.replaceChildren();
+      RACETRACK_SECTORS.forEach((sec) => {
+        const p = policySector[sec.id];
+        const pctNum = 100 * p;
+        const row = document.createElement("div");
+        row.className = "stat-row";
+        row.innerHTML = `
+          <span class="stat-label" title="${sec.labelMed}">${sec.labelShort}</span>
+          <div class="stat-bar-wrap" role="presentation">
+            <div class="stat-bar ${sec.statsClass}" style="width:${pctNum}%"></div>
+          </div>
+          <span class="stat-meta">${formatProbPct(p)}</span>
+        `;
+        policyRows.appendChild(row);
+      });
+
+      const topK = 8;
+      const sortedNums = [...Array(37)]
+        .map((_, n) => ({ n, p: policyNum[n] }))
+        .sort((a, b) => b.p - a.p || a.n - b.n);
+      topNote.textContent = `以下为归一化后的策略权重 Top‑${Math.min(topK, 37)}；栈内先验 = 该号出现次数÷栈长（未出现为 0）；连击达标时再以顺势红黑乘子加权。`;
+      topList.replaceChildren();
+      sortedNums.slice(0, topK).forEach(({ n, p }) => {
+        const li = document.createElement("li");
+        const sid = NUM_TO_TRACK_SECTOR_ID[n];
+        const sLabel = RACETRACK_BY_ID[sid].labelShort;
+        li.textContent = `号码 ${n}（${sLabel}）：策略 ${formatProbPct(p)} · 栈内先验 ${formatProbPct(priorNum[n])}`;
+        topList.appendChild(li);
+      });
+
+      allList.replaceChildren();
+      sortedNums.forEach(({ n, p }) => {
+        const li = document.createElement("li");
+        const sid = NUM_TO_TRACK_SECTOR_ID[n];
+        li.textContent = `${n} · ${RACETRACK_BY_ID[sid].labelShort} · ${formatProbPct(p)}`;
+        allList.appendChild(li);
+      });
+
+      const { ranked } = computeFusionNextRanking(historyStack, lens);
+      const fusionBlock = document.getElementById("fusionWheelBlock");
+      document.getElementById("fusionWheelTitle").textContent = `边际融合推演 Top‑${STRATEGY_FUSION_TOP_K}`;
+      document.getElementById("fusionNumsLine").textContent = ranked
+        .slice(0, STRATEGY_FUSION_TOP_K)
+        .map((row) => row.n)
+        .join(", ");
+      fusionBlock.hidden = false;
+
+      const phyBlock = document.getElementById("phyWheelBlock");
+      const phyLine = document.getElementById("phyNumsLine");
+      phyLine.classList.remove("phy-pending");
+      document.getElementById("phyWheelTitle").textContent = `圆周步长推演 Top‑${STRATEGY_FUSION_TOP_K}`;
+      const geom = computeWheelGeometryRanking(historyStack);
+      phyBlock.hidden = false;
+      if (
+        historyStack.length < 2 ||
+        !geom.usable ||
+        geom.ranked.length === 0
+      ) {
+        phyLine.textContent =
+          "至少需要 2 盘相邻开奖，才能汇总圆上最短弧步长并作外推示意。";
+        phyLine.classList.add("phy-pending");
+      } else {
+        phyLine.textContent = geom.ranked
+          .slice(0, STRATEGY_FUSION_TOP_K)
+          .map((row) => row.n)
+          .join(", ");
+      }
+
+      renderStrategyWheelOverlay(recommendedSectorIds);
+    }
+
+    function refreshFromStack() {
+      const entries = entriesFromStack();
+      const validValues = historyStack.slice();
+      renderStackPreview();
+      renderDupSummary(entries);
+      renderColorStats(validValues, false);
+      renderOddEvenStats(validValues);
+      renderHistoryOnWheel(entries);
+      renderStrategyLens();
+      if (historyStack.length === 0) {
+        statusLine.className = "status";
+        statusLine.textContent =
+          `栈是空的。在上方输入最新号码并点「记入」压栈；满 ${stackCap} 条会自动挤掉最旧的一条。`;
+        return;
+      }
+      statusLine.className = "status ok";
+      statusLine.textContent = `栈中 ${historyStack.length} 条 / 上限 ${stackCap}。预览条最左 = 最新一盘。`;
+    }
+
+    function formatPct(count, total) {
+      if (total <= 0) return "—";
+      return `${((100 * count) / total).toFixed(1)}%`;
+    }
+
+    function renderColorStats(validValues, hasInvalid) {
+      const total = validValues.length;
+      const tally = { green: 0, red: 0, black: 0 };
+      validValues.forEach((n) => {
+        const c = NUM_POCKET_COLOR[n];
+        if (c && tally[c] !== undefined) tally[c] += 1;
+      });
+
+      const noteEl = document.getElementById("colorStatsNote");
+      const warnEl = document.getElementById("colorStatsWarn");
+      const rowsEl = document.getElementById("colorStatsRows");
+
+      if (total === 0) {
+        noteEl.textContent =
+          "尚无有效录入。录入后此处显示绿色、红色、黑色的出现次数与占比（相对已录入样本）。";
+        warnEl.hidden = true;
+        warnEl.textContent = "";
+      } else {
+        noteEl.textContent = `基于已录入的 ${total} 盘有效开奖：以下为样本频次（经验占比），不代表下一盘真实概率。公平单零轮盘理论约为 绿 2.7%、红 48.6%、黑 48.6%。`;
+        if (hasInvalid) {
+          warnEl.hidden = false;
+          warnEl.textContent = "部分格子无效，已排除无效输入后再统计。";
+        } else {
+          warnEl.hidden = true;
+          warnEl.textContent = "";
+        }
+      }
+
+      const rows = [
+        { key: "green", label: "绿", className: "green" },
+        { key: "red", label: "红", className: "red" },
+        { key: "black", label: "黑", className: "black" },
+      ];
+
+      rowsEl.replaceChildren();
+      rows.forEach(({ key, label, className }) => {
+        const count = tally[key];
+        const pctStr = formatPct(count, total);
+        const pctNum = total > 0 ? (100 * count) / total : 0;
+
+        const row = document.createElement("div");
+        row.className = "stat-row";
+        row.innerHTML = `
+          <span class="stat-label"><i class="sw ${className}" aria-hidden="true"></i>${label}</span>
+          <div class="stat-bar-wrap" role="presentation">
+            <div class="stat-bar ${className}" style="width:${pctNum}%"></div>
+          </div>
+          <span class="stat-meta"><strong>${total === 0 ? "—" : count}</strong> 次 · ${pctStr}</span>
+        `;
+        rowsEl.appendChild(row);
+      });
+    }
+
+    function renderOddEvenStats(validValues) {
+      const total = validValues.length;
+      let odd = 0;
+      let even = 0;
+      let zero = 0;
+      validValues.forEach((n) => {
+        if (n === 0) zero += 1;
+        else if (n % 2 === 1) odd += 1;
+        else even += 1;
+      });
+
+      const noteEl = document.getElementById("oeStatsNote");
+      const rowsEl = document.getElementById("oeStatsRows");
+
+      if (total === 0) {
+        noteEl.textContent =
+          "尚无有效录入。单 = 1–35 奇数；双 = 2–36 偶数；零 = 0（单独统计，不计入单或双）。";
+      } else {
+        noteEl.textContent = `基于已录入的 ${total} 盘：以下为单双与 0 的样本占比。理论单零轮盘约在每类上为 单 ≈48.6%、双 ≈48.6%、零 ≈2.7%（仅供参考）。`;
+      }
+
+      const rows = [
+        { key: "odd", label: "单", className: "odd", count: odd },
+        { key: "even", label: "双", className: "even", count: even },
+        { key: "zero", label: "零", className: "zero-oe", count: zero },
+      ];
+
+      rowsEl.replaceChildren();
+      rows.forEach(({ label, className, count }) => {
+        const pctStr = formatPct(count, total);
+        const pctNum = total > 0 ? (100 * count) / total : 0;
+        const row = document.createElement("div");
+        row.className = "stat-row";
+        row.innerHTML = `
+          <span class="stat-label"><i class="sw ${className}" aria-hidden="true"></i>${label}</span>
+          <div class="stat-bar-wrap" role="presentation">
+            <div class="stat-bar ${className}" style="width:${pctNum}%"></div>
+          </div>
+          <span class="stat-meta"><strong>${total === 0 ? "—" : count}</strong> 次 · ${pctStr}</span>
+        `;
+        rowsEl.appendChild(row);
+      });
+    }
+
+    function renderDupSummary(roundEntries) {
+      const section = document.getElementById("dupSummarySection");
+      const list = document.getElementById("dupSummaryList");
+      const byNum = {};
+      roundEntries.forEach((e) => {
+        if (!e) return;
+        if (!byNum[e.value]) byNum[e.value] = [];
+        byNum[e.value].push(e.round);
+      });
+      const dupKeys = Object.keys(byNum).filter((k) => byNum[k].length >= 2);
+      if (dupKeys.length === 0) {
+        section.hidden = true;
+        list.replaceChildren();
+        return;
+      }
+      section.hidden = false;
+      list.replaceChildren();
+      dupKeys
+        .map(Number)
+        .sort((a, b) => a - b)
+        .forEach((num) => {
+          const rounds = byNum[num].slice().sort((a, b) => a - b);
+          const li = document.createElement("li");
+          li.innerHTML = `<strong>${num}</strong> 号：<span>第 <strong>${rounds.join("、")}</strong> 盘</span>（共 ${rounds.length} 次）`;
+          list.appendChild(li);
+        });
+    }
+
+    function getOutsideLabelLines(roundsSorted) {
+      const r = roundsSorted.slice();
+      if (r.length === 0) return [];
+      if (r.length <= 5) return [`第${r.join("·")}盘`];
+      if (r.length <= 8) {
+        const a = r.slice(0, 4).join("·");
+        const b = r.slice(4).join("·");
+        return [`第${a}·`, `${b}盘`];
+      }
+      const a = r.slice(0, 4).join("·");
+      const b = r.slice(4, 8).join("·");
+      const c = r.slice(8).join("·");
+      return [`第${a}·`, `${b}·`, `${c}盘`];
+    }
+
+    function appendOutsideCallout(parent, seg, roundsSorted) {
+      const pocketNum = CLOCKWISE_POCKETS[seg].n;
+      const a0 = -Math.PI / 2 + seg * slice;
+      const mid = a0 + slice / 2;
+      const rLine0 = rFrame + 6;
+      const rLine1 = rFrame + 19;
+      const rTextR = rFrame + 27;
+      const p0 = polarToCart(rLine0, mid);
+      const p1 = polarToCart(rLine1, mid);
+      const p2 = polarToCart(rTextR, mid);
+
+      const line = document.createElementNS(NS, "line");
+      line.setAttribute("x1", p0.x);
+      line.setAttribute("y1", p0.y);
+      line.setAttribute("x2", p1.x);
+      line.setAttribute("y2", p1.y);
+      line.setAttribute("stroke", "#a67c3d");
+      line.setAttribute("stroke-width", "2.3");
+      line.setAttribute("stroke-linecap", "round");
+      line.setAttribute("stroke-dasharray", "6 7");
+      line.setAttribute("opacity", "0.95");
+      parent.appendChild(line);
+
+      const lines = getOutsideLabelLines(roundsSorted);
+      let displayLines;
+      if (roundsSorted.length === 1) {
+        displayLines = [`${pocketNum}号 第${roundsSorted[0]}盘`];
+      } else {
+        displayLines = [`${pocketNum}号`, ...lines];
+      }
+      const longRow = displayLines.some((l) => l.length > 14);
+      const fs = displayLines.length >= 3 || longRow ? 7 : displayLines.length === 2 ? 7.5 : 8.5;
+      const lineGap = fs + 2.5;
+      const nLines = displayLines.length;
+      const startDy = -((nLines - 1) * lineGap) / 2;
+
+      const maxLen = Math.max(...displayLines.map((l) => l.length));
+      const textW = Math.min(110, maxLen * fs * 0.58 + 16);
+      const textH = nLines * lineGap + 12;
+
+      const gSticker = document.createElementNS(NS, "g");
+      const bg = document.createElementNS(NS, "rect");
+      bg.setAttribute("x", p2.x - textW / 2);
+      bg.setAttribute("y", p2.y - textH / 2);
+      bg.setAttribute("width", textW);
+      bg.setAttribute("height", textH);
+      bg.setAttribute("rx", "12");
+      bg.setAttribute("fill", "#ffffff");
+      bg.setAttribute("stroke", "#8f7350");
+      bg.setAttribute("stroke-width", "2");
+      bg.setAttribute("filter", "url(#stickerShadow)");
+      gSticker.appendChild(bg);
+
+      const text = document.createElementNS(NS, "text");
+      text.setAttribute("x", p2.x);
+      text.setAttribute("y", p2.y);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "middle");
+      text.setAttribute("fill", "#2f2a22");
+      text.setAttribute("font-size", String(fs));
+      text.setAttribute("font-weight", "700");
+      text.setAttribute("font-family", "PingFang SC, Microsoft YaHei, sans-serif");
+
+      const tip = document.createElementNS(NS, "title");
+      tip.textContent = `${pocketNum} 号：第 ${roundsSorted.join("、")} 盘`;
+      text.appendChild(tip);
+
+      displayLines.forEach((ln, i) => {
+        const ts = document.createElementNS(NS, "tspan");
+        ts.setAttribute("x", p2.x);
+        ts.setAttribute("dy", i === 0 ? `${startDy}` : `${lineGap}`);
+        ts.textContent = ln;
+        text.appendChild(ts);
+      });
+
+      gSticker.appendChild(text);
+      parent.appendChild(gSticker);
+    }
+
+    /** 同一格位内沿弧均分多个「盘次」徽章；超过 4 次用中间折叠卡片，避免挤在一起。 */
+    const MAX_DISTINCT_BADGES = 4;
+
+    function appendMiniRoundBadge(parent, x, y, roundNum) {
+      const r = 10;
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", x);
+      c.setAttribute("cy", y);
+      c.setAttribute("r", r);
+      c.setAttribute("fill", "#ffffff");
+      c.setAttribute("stroke", "#a67c3d");
+      c.setAttribute("stroke-width", "2");
+      const text = document.createElementNS(NS, "text");
+      text.setAttribute("x", x);
+      text.setAttribute("y", y);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("fill", "#2f2a22");
+      text.setAttribute("font-family", "PingFang SC, Microsoft YaHei, sans-serif");
+      const tNum = document.createElementNS(NS, "tspan");
+      tNum.setAttribute("x", x);
+      tNum.setAttribute("dy", "-1");
+      tNum.setAttribute("font-size", "12");
+      tNum.setAttribute("font-weight", "800");
+      tNum.setAttribute("fill", "#7a5f28");
+      tNum.textContent = String(roundNum);
+      const tLab = document.createElementNS(NS, "tspan");
+      tLab.setAttribute("x", x);
+      tLab.setAttribute("dy", "10");
+      tLab.setAttribute("font-size", "7");
+      tLab.setAttribute("font-weight", "700");
+      tLab.setAttribute("fill", "#9a868b");
+      tLab.textContent = "盘";
+      text.appendChild(tNum);
+      text.appendChild(tLab);
+      const tip = document.createElementNS(NS, "title");
+      tip.textContent = `第 ${roundNum} 盘开出此号码`;
+      text.appendChild(tip);
+      parent.appendChild(c);
+      parent.appendChild(text);
+    }
+
+    function buildFoldedLines(roundsSorted) {
+      const nums = roundsSorted.slice();
+      if (nums.length === 0) return [];
+      const maxPerLine = 4;
+      const lines = [];
+      for (let i = 0; i < nums.length; i += maxPerLine) {
+        const chunk = nums.slice(i, i + maxPerLine);
+        const isFirst = i === 0;
+        const isLast = i + maxPerLine >= nums.length;
+        if (isFirst && isLast) lines.push(`第 ${chunk.join("、")} 盘`);
+        else if (isFirst) lines.push(`第 ${chunk.join("、")}、`);
+        else if (isLast) lines.push(`${chunk.join("、")} 盘`);
+        else lines.push(`${chunk.join("、")}、`);
+      }
+      return lines;
+    }
+
+    function appendFoldedRoundCard(parent, x, y, roundsSorted) {
+      const lines = buildFoldedLines(roundsSorted);
+      const fs = lines.length >= 3 ? 7 : 8;
+      const lineH = fs + 3;
+      const padX = 9;
+      const padY = 7;
+      const maxChars = Math.max(...lines.map((l) => l.length));
+      const fw = Math.min(86, Math.max(52, maxChars * fs * 0.62 + padX * 2));
+      const fh = lines.length * lineH + padY * 2;
+      const g = document.createElementNS(NS, "g");
+      const rect = document.createElementNS(NS, "rect");
+      rect.setAttribute("x", x - fw / 2);
+      rect.setAttribute("y", y - fh / 2);
+      rect.setAttribute("width", fw);
+      rect.setAttribute("height", fh);
+      rect.setAttribute("rx", "10");
+      rect.setAttribute("fill", "#ffffff");
+      rect.setAttribute("stroke", "#8f7350");
+      rect.setAttribute("stroke-width", "2");
+      rect.setAttribute("filter", "url(#stickerShadow)");
+      g.appendChild(rect);
+      const text = document.createElementNS(NS, "text");
+      text.setAttribute("x", x);
+      text.setAttribute("y", y - fh / 2 + padY + fs);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("fill", "#2f2a22");
+      text.setAttribute("font-size", String(fs));
+      text.setAttribute("font-weight", "600");
+      text.setAttribute("font-family", "PingFang SC, Microsoft YaHei, sans-serif");
+      lines.forEach((ln, i) => {
+        const ts = document.createElementNS(NS, "tspan");
+        ts.setAttribute("x", x);
+        ts.setAttribute("dy", i === 0 ? 0 : lineH);
+        ts.textContent = ln;
+        text.appendChild(ts);
+      });
+      const tip = document.createElementNS(NS, "title");
+      tip.textContent = `第 ${roundsSorted.join("、")} 盘开出此号码`;
+      text.appendChild(tip);
+      g.appendChild(text);
+      parent.appendChild(g);
+    }
+
+    function renderHistoryOnWheel(roundEntries) {
+      gHistoryFill.replaceChildren();
+      gHistoryBadges.replaceChildren();
+      gHistoryOutside.replaceChildren();
+
+      const bySegment = {};
+      roundEntries.forEach((e) => {
+        if (!e) return;
+        const seg = NUM_TO_SEGMENT[e.value];
+        if (seg === undefined) return;
+        if (!bySegment[seg]) bySegment[seg] = [];
+        bySegment[seg].push(e.round);
+      });
+
+      Object.keys(bySegment).forEach((segKey) => {
+        const seg = Number(segKey);
+        const rounds = bySegment[seg].sort((a, b) => a - b);
+        const fillPath = document.createElementNS(NS, "path");
+        fillPath.setAttribute("d", segmentPath(seg));
+        fillPath.setAttribute("fill", "rgba(166, 124, 61, 0.22)");
+        fillPath.setAttribute("stroke", "#a67c3d");
+        fillPath.setAttribute("stroke-width", "2.5");
+        fillPath.setAttribute("stroke-linejoin", "round");
+        gHistoryFill.appendChild(fillPath);
+
+        const a0 = -Math.PI / 2 + seg * slice;
+        const mid = a0 + slice / 2;
+
+        appendOutsideCallout(gHistoryOutside, seg, rounds);
+
+        if (rounds.length <= MAX_DISTINCT_BADGES) {
+          const rMark = rPocketOuter - 13;
+          const n = rounds.length;
+          rounds.forEach((roundNum, i) => {
+            const t = n === 1 ? 0.5 : (i + 1) / (n + 1);
+            const ang = a0 + t * slice;
+            const { x, y } = polarToCart(rMark, ang);
+            appendMiniRoundBadge(gHistoryBadges, x, y, roundNum);
+          });
+        } else {
+          const tr = (rPocketInner + rPocketOuter) / 2 - 6;
+          const { x, y } = polarToCart(tr, mid);
+          appendFoldedRoundCard(gHistoryBadges, x, y, rounds);
+        }
+      });
+    }
+
+    document.getElementById("btnPush").addEventListener("click", () => {
+      if (tryPushLatest()) refreshFromStack();
+    });
+    latestInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (tryPushLatest()) refreshFromStack();
+      }
+    });
+    document.getElementById("btnClear").addEventListener("click", () => {
+      historyStack = [];
+      latestInput.value = "";
+      latestInput.classList.remove("invalid");
+      refreshFromStack();
+    });
+    document.getElementById("btnPop").addEventListener("click", () => {
+      if (historyStack.length > 0) {
+        historyStack.pop();
+        refreshFromStack();
+      }
+    });
+
+    document.getElementById("stackCapInput").addEventListener("change", commitStackCapacityFromInput);
+    document.getElementById("stackCapInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        commitStackCapacityFromInput();
+      }
+    });
+
+    syncStackCapacityUI();
+    refreshFromStack();
+  </script>
+</body>
+</html>
